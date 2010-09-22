@@ -1,3 +1,15 @@
+cdef extern from "stdio.h":
+    ctypedef struct FILE:
+        pass
+
+cdef extern from "Python.h":
+    #cdef struct _object:
+    #    pass
+    #ctypedef _object PyObject
+
+    FILE * PyFile_AsFile(object p)
+    int fprintf(FILE *stream, char *buf, ...)
+
 #     CONSTANTS
 cdef char *VTK_BYTE_ORDER = "LittleEndian"
 
@@ -41,6 +53,10 @@ VtkUInt64  = VtkDataType(8, "UInt64")
 VtkFloat32 = VtkDataType(4, "Float32")
 VtkFloat64 = VtkDataType(8, "Float64")
 
+cdef void ctest(object p):
+    cdef FILE *f = PyFile_AsFile(p)
+    fprintf(f, "Hello from C!!!!\n")
+
 class XmlWriter:
     def __init__(self, filepath, addDeclaration = True):
         self.stream = open(filepath, "w")
@@ -50,6 +66,7 @@ class XmlWriter:
 
     def close(self):
         assert(not self.openTag)
+
         self.stream.close()
 
     def addDeclaration(self):
@@ -86,6 +103,11 @@ class XmlWriter:
         for key in kwargs:
             self.stream.write(' %s="%s"'%(key, kwargs[key]))
         return self
+    
+    def test(self):
+        ctest(self.stream)
+
+
 
 class VtkFile:
     

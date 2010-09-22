@@ -11,6 +11,7 @@ xml.openElement("children2").addAttributes(id = "name", age=34)
 xml.addText("This is text")
 xml.closeElement("children2")
 xml.closeElement("root")
+xml.test()
 xml.close()
 
 
