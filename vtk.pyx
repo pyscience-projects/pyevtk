@@ -1,6 +1,15 @@
+import sys
+import numpy as np
+
+# ================================
+#      External C definitions
+# ================================
 cdef extern from "stdio.h":
     ctypedef struct FILE:
         pass
+    int fprintf(FILE *stream, char *buf, ...)
+    int printf(char *buf, ...)
+
 
 cdef extern from "Python.h":
     #cdef struct _object:
@@ -8,10 +17,13 @@ cdef extern from "Python.h":
     #ctypedef _object PyObject
 
     FILE * PyFile_AsFile(object p)
-    int fprintf(FILE *stream, char *buf, ...)
 
-#     CONSTANTS
-cdef char *VTK_BYTE_ORDER = "LittleEndian"
+cdef extern from "numpy/arrayobject.h":
+    void *PyArray_DATA(object obj)
+
+# ================================
+#            VTK Types
+# ================================
 
 #     FILE TYPES
 cdef class VtkFileType:
@@ -31,8 +43,8 @@ VtkStructuredGrid   = VtkFileType("StructuredGrid", ".vts")
 VtkUnstructuredGrid = VtkFileType("UnstructuredGrid", ".vtu")
 
 cdef class VtkDataType:
-    cdef int size
-    cdef char *name
+    cdef readonly int size
+    cdef readonly char *name
 
     def __init__(self, size, name):
         self.size = size
@@ -53,9 +65,21 @@ VtkUInt64  = VtkDataType(8, "UInt64")
 VtkFloat32 = VtkDataType(4, "Float32")
 VtkFloat64 = VtkDataType(8, "Float64")
 
-cdef void ctest(object p):
-    cdef FILE *f = PyFile_AsFile(p)
-    fprintf(f, "Hello from C!!!!\n")
+# Map numpy to VTK data types
+np_to_vtk = { 'int8'    : VtkInt8,
+              'uint8'   : VtkUInt8,
+              'int16'   : VtkInt16,
+              'uint16'  : VtkUInt16,
+              'int32'   : VtkInt32,
+              'uint32'  : VtkUInt32,
+              'int64'   : VtkInt64,
+              'uint64'  : VtkUInt64,
+              'float32' : VtkFloat32,
+              'float64' : VtkFloat64 }
+
+#cdef void ctest(object p):
+#    cdef FILE *f = PyFile_AsFile(p)
+#    fprintf(f, "Hello from C!!!!\n")
 
 class XmlWriter:
     def __init__(self, filepath, addDeclaration = True):
@@ -104,10 +128,22 @@ class XmlWriter:
             self.stream.write(' %s="%s"'%(key, kwargs[key]))
         return self
     
-    def test(self):
-        ctest(self.stream)
 
+# Helper function
+def _mix_extents(start, end):
+    assert (len(start) == len(end) == 3)
+    string = "%d %d %d %d %d %d" % (start[0], end[0], start[1], end[1], start[2], end[2])
+    return string
 
+def _array_to_string(a):
+    s = "".join([`num` + " " for num in a])
+    return s
+
+def _get_byte_order():
+    if sys.byteorder == "little":
+        return "LittleEndian"
+    else:
+        return "BigEndian"
 
 class VtkFile:
     
@@ -118,10 +154,204 @@ class VtkFile:
                 ftype: file type, e.g. VtkImageData, etc.
         """
 
-        self.filename = filepath + ftype.ext
+        filename = filepath + ftype.ext
+        self.xml = XmlWriter(filename)
+        self.offset = 0  # offset in bytes after beginning of binary section
+        self.appendedDataIsOpen = False
 
-    def openElement(self, tag):
-        pass 
+        self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
+                                                      version = "0.1",
+                                                      byte_order = _get_byte_order())
+
+    def openPiece(self, start = None, end = None,
+                        npoints = None, ncells = None,
+                        nverts = None, nlines = None, nstrips = None, npolys = None): 
+        """ Open piece section.
+            
+            PARAMETERS:
+                Next two parameters must be given together.
+                start: array or list with start indexes in each direction.
+                end:   array or list with end indexes in each direction.
+
+                npoints: number of points in piece (int).
+                ncells: number of cells in piece (int). If present,
+                        npoints must also be given.
+
+                All the following parameters must be given together with npoints.
+                They shoudl all be integer values.
+                nverts:
+                nlines:
+                nstrips:
+                npolys:
+
+            RETURNS:
+                this VtkFile to allow chained calls.
+        """
+        # TODO: Check what are the requirements for each type of grid.
+
+        self.xml.openElement("Piece")
+        if (start and end):
+            ext = _mix_extents(start, end)
+            self.xml.addAttributes( Extent = ext)
+        
+        elif (ncells and npoints):
+            self.xml.addAttributes(npoints = npoints, ncells = ncells)
+
+        elif (npoints and nverts and nlines and nstrips and npolys):
+            self.xml.addAttributes(npoints = npoints, nverts = nverts,
+                    nlines = nlines, nstrips = nstrips, npolys = npolys)
+        else:
+            assert(False)
+
+        return self
+
+    def closePiece(self):
+        self.xml.closeElement("Piece")
+
+    def openData(self, nodeType, scalars=None, vectors=None, normals=None, tensors=None, tcoords=None):
+        """ Open data section.
+
+            PARAMETERS:
+                nodeType: Point or Cell.
+                scalars: default data array name for scalar data.
+                vectors: default data array name for vector data.
+                normals: default data array name for normals data.
+                tensors: default data array name for tensors data.
+                tcoords: dafault data array name for tcoords data.
+
+            RETURNS:
+                this VtkFile to allow chained calls.
+        """
+        self.xml.openElement(nodeType + "Data")
+        if scalars:
+            self.xml.addAttributes(scalars = scalars)
+        if vectors:
+            self.xml.addAttributes(vectors = vectors)
+        if normals:
+            self.xml.addAttributes(normals = normals)
+        if tensors:
+            self.xml.addAttributes(tensors = tensors)
+        if tcoords:
+            self.xml.addAttributes(tcoords = tcoords)
+
+        return self
+
+    def closeData(self, nodeType):
+        """ Close data section.
+
+            PARAMETERS:
+                nodeType: Point or Cell.
+ 
+            RETURNS:
+                this VtkFile to allow chained calls.
+        """
+        self.xml.closeElement(nodeType + "Data")
+
+
+    def openGrid(self, gridType, start = None, end = None, origin = None, spacing = None):
+        """ Open grid section.
+
+            PARAMETERS:
+                gridType: one of the VtkFileType, e.g. VtkStructuredGrid.
+                start: array or list of start indexes. Required for Structured, Rectilinear and ImageData grids.
+                end: array or list of end indexes. Required for Structured, Rectilinear and ImageData grids.
+                origin: 3D array or list with grid origin. Only required for ImageData grids.
+                spacing: 3D array or list with grid spacing. Only required for ImageData grids.
+
+            RETURNS:
+                this VtkFile to allow chained calls.
+        """
+        gType = gridType.name
+        self.xml.openElement(gType)
+        if (gType == VtkImageData.name):
+            if (not start or not end or not origin or not spacing): assert(False)
+            ext = _mix_extents(start, end)
+            self.xml.addAttributes(WholeExtent = ext,
+                                   Origin = _array_to_string(origin),
+                                   Spacing = _array_to_string(spacing))
+        
+        elif (gType == VtkStructuredGrid.name or gType == VtkRectilinearGrid.name):
+            if (not start or not end): assert (False)
+            ext = _mix_extents(start, end)
+            self.xml.addAttributes(WholeExtent = ext) 
+                
+        return self
+
+    def closeGrid(self, gridType):
+        """ Open grid section.
+
+            PARAMETERS:
+                gridType: one of the VtkFileType, e.g. VtkStructuredGrid.
+
+            RETURNS:
+                this VtkFile to allow chained calls.
+        """
+        self.xml.closeElement(gridType.name)
+
+    
+    def addData(self, name, dtype, nelem, ncomp):
+        dtype = np_to_vtk[dtype]
+
+        self.xml.openElement( "DataArray")
+        self.xml.addAttributes( Name = name,
+                                NumberOfComponents = ncomp,
+                                type = dtype.name,
+                                format = "appended",
+                                offset = self.offset)
+        self.xml.closeElement()
+
+        #TODO: Check if 4 is platform independent
+        self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
+
+    def appendData(self, data = None, dtype = None, nelem = None, ncomp = None):
+        cdef int block_size, dsize
+        cdef double *p
+
+        self.openAppendedData()
+
+        if data is not None:
+            dsize = data.dtype.itemsize
+            nelem = data.size
+            ncomp = 1             # change this for 3 components
+
+            p = <double *>PyArray_DATA(data)
+            printf( "a[0], a[1], a[2], a[3], a[4] = %g, %g, %g, %g, %g \n", p[0], p[1], p[2], p[3], p[4]) 
+
+        elif dtype and nelem and ncomp:
+            dsize = np_to_vtk[dtype].size
+
+        else:
+            assert(False)
+        
+        block_size = dsize * ncomp * nelem
+        # flush the stream buffer
+        self.xml.stream.flush()
+
+        # Write data block size
+
+        # Write array data if present
+
+
+    def openAppendedData(self):
+        """ 
+            Open binary section.
+            It is not necessary to explicitly call this function.
+        """
+        if not self.appendedDataIsOpen:
+            self.xml.openElement("AppendedData").addAttributes(encoding = "raw").addText("_")
+            self.appendedDataIsOpen = True
+
+    def closeAppendedData(self):
+        """ 
+            Close binary section.
+            It is not necessary to explicitly call this function.
+        """
+
+        self.xml.closeElement("AppendedData")
 
     def save(self):
-        pass
+        if self.appendedDataIsOpen:
+            self.xml.closeElement("AppendedData")
+        self.xml.closeElement("VTKFile")
+        self.xml.close()
+    
