@@ -9,6 +9,8 @@ cdef extern from "stdio.h":
         pass
     int fprintf(FILE *stream, char *buf, ...)
     int printf(char *buf, ...)
+    size_t fwrite (void *array, size_t size, size_t count, FILE *stream)
+    
 
 
 cdef extern from "Python.h":
@@ -17,9 +19,13 @@ cdef extern from "Python.h":
     #ctypedef _object PyObject
 
     FILE * PyFile_AsFile(object p)
+    void PyFile_IncUseCount(object p)
+    void PyFile_DecUseCount(object p)
 
 cdef extern from "numpy/arrayobject.h":
     void *PyArray_DATA(object obj)
+    int PyArray_ISCARRAY(object obj)
+    int PyArray_ISFARRAY(object obj)
 
 # ================================
 #            VTK Types
@@ -305,7 +311,8 @@ class VtkFile:
 
     def appendData(self, data = None, dtype = None, nelem = None, ncomp = None):
         cdef int block_size, dsize
-        cdef double *p
+        cdef void *p
+        cdef FILE *f
 
         self.openAppendedData()
 
@@ -314,23 +321,30 @@ class VtkFile:
             nelem = data.size
             ncomp = 1             # change this for 3 components
 
-            p = <double *>PyArray_DATA(data)
-            printf( "a[0], a[1], a[2], a[3], a[4] = %g, %g, %g, %g, %g \n", p[0], p[1], p[2], p[3], p[4]) 
-
         elif dtype and nelem and ncomp:
             dsize = np_to_vtk[dtype].size
 
         else:
             assert(False)
         
-        block_size = dsize * ncomp * nelem
-        # flush the stream buffer
-        self.xml.stream.flush()
-
         # Write data block size
+        block_size = dsize * ncomp * nelem
+        self.xml.stream.flush()                 # flush the stream buffer
+        f = PyFile_AsFile(self.xml.stream)
+        PyFile_IncUseCount(self.xml.stream)
+        fwrite(&block_size, sizeof(int), 1, f)
 
-        # Write array data if present
+        # Write data array if present
+        if data is not None:
+            # Check if array is contiguous and it has Fortran order
+            # TODO: Make sure we release the lock for the file
+            if not PyArray_ISFARRAY(data): assert(False)
 
+            p = PyArray_DATA(data)
+            fwrite(p, data.dtype.itemsize, data.size, f)
+        
+        # Release file
+        PyFile_DecUseCount(self.xml.stream)
 
     def openAppendedData(self):
         """ 

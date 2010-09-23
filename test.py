@@ -8,7 +8,7 @@ nz = 1
 ncells = nx * ny * nz
 npoints = (nx + 1) * (ny + 1) * (nz + 1)
 
-temp = np.zeros( [nx + 1, ny + 1, nz + 1], dtype="float64", order='F')
+temp = np.zeros( [nx + 1, ny + 1, nz + 1], dtype="float64", order='C')
 
 temp[0,0,0] = 0.0
 temp[1,0,0] = 1.0
