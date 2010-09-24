@@ -10,22 +10,21 @@ cdef extern from "stdio.h":
     int fprintf(FILE *stream, char *buf, ...)
     int printf(char *buf, ...)
     size_t fwrite (void *array, size_t size, size_t count, FILE *stream)
-    
-
 
 cdef extern from "Python.h":
-    #cdef struct _object:
-    #    pass
-    #ctypedef _object PyObject
-
+    ctypedef struct PyFileObject:
+        pass
     FILE * PyFile_AsFile(object p)
-    void PyFile_IncUseCount(object p)
+    void PyFile_IncUseCount(object p) # The argument should have type PyFileObject *, but it does not work
     void PyFile_DecUseCount(object p)
 
 cdef extern from "numpy/arrayobject.h":
+    void import_array()
     void *PyArray_DATA(object obj)
     int PyArray_ISCARRAY(object obj)
     int PyArray_ISFARRAY(object obj)
+# Initialize Numpy module
+import_array()
 
 # ================================
 #            VTK Types
@@ -96,7 +95,6 @@ class XmlWriter:
 
     def close(self):
         assert(not self.openTag)
-
         self.stream.close()
 
     def addDeclaration(self):
@@ -151,6 +149,60 @@ def _get_byte_order():
     else:
         return "BigEndian"
 
+cdef void _writeBlockSize(object stream, int block_size):
+    cdef FILE *f
+    stream.flush()          
+    f = PyFile_AsFile(stream)
+    PyFile_IncUseCount(stream)
+    fwrite(&block_size, sizeof(int), 1, f)   # This code is not portable. We should use sizeof(int32_t) instead.
+    PyFile_DecUseCount(stream)
+
+cdef void _writeArrayToFile(object stream, object data):
+    cdef FILE *f
+    cdef void *p
+
+    # Check if array is contiguous and it has Fortran order
+    assert(PyArray_ISFARRAY(data))
+
+    stream.flush()          
+    f = PyFile_AsFile(stream)
+    PyFile_IncUseCount(stream)
+    p = PyArray_DATA(data)
+    fwrite(p, data.dtype.itemsize, data.size, f)
+        
+    # Release file
+    PyFile_DecUseCount(stream)
+
+cdef void _writeArraysToFile(object stream, object x, object y, object z):
+    cdef FILE *f
+    cdef char *px, *py, *pz    # Hack to avoid checking for correct type cast
+    cdef Py_ssize_t nitems, i
+    cdef int itemsize
+
+    # Check if arrays are contiguous and have Fortran order
+    assert ( x.size == y.size == z.size )
+    assert ( x.dtype.itemsize == y.dtype.itemsize == z.dtype.itemsize )
+    assert ( PyArray_ISFARRAY(x) and PyArray_ISFARRAY(y) and PyArray_ISFARRAY(z) )
+
+    stream.flush()
+    f = PyFile_AsFile(stream)
+    PyFile_IncUseCount(stream)
+
+    nitems = x.size
+    itemsize = x.dtype.itemsize
+    px = <char *>PyArray_DATA(x)
+    py = <char *>PyArray_DATA(y)
+    pz = <char *>PyArray_DATA(z)
+    
+    for i in range(nitems):
+        fwrite( &px[i * itemsize], itemsize, 1, f )
+        fwrite( &py[i * itemsize], itemsize, 1, f )
+        fwrite( &pz[i * itemsize], itemsize, 1, f )
+
+    # Release file
+    PyFile_DecUseCount(stream)
+
+
 class VtkFile:
     
     def __init__(self, filepath, VtkFileType ftype):
@@ -159,7 +211,7 @@ class VtkFile:
                 filepath: filename without extension.
                 ftype: file type, e.g. VtkImageData, etc.
         """
-
+        self.ftype = ftype
         filename = filepath + ftype.ext
         self.xml = XmlWriter(filename)
         self.offset = 0  # offset in bytes after beginning of binary section
@@ -254,11 +306,10 @@ class VtkFile:
         self.xml.closeElement(nodeType + "Data")
 
 
-    def openGrid(self, gridType, start = None, end = None, origin = None, spacing = None):
+    def openGrid(self, start = None, end = None, origin = None, spacing = None):
         """ Open grid section.
 
             PARAMETERS:
-                gridType: one of the VtkFileType, e.g. VtkStructuredGrid.
                 start: array or list of start indexes. Required for Structured, Rectilinear and ImageData grids.
                 end: array or list of end indexes. Required for Structured, Rectilinear and ImageData grids.
                 origin: 3D array or list with grid origin. Only required for ImageData grids.
@@ -267,7 +318,7 @@ class VtkFile:
             RETURNS:
                 this VtkFile to allow chained calls.
         """
-        gType = gridType.name
+        gType = self.ftype.name
         self.xml.openElement(gType)
         if (gType == VtkImageData.name):
             if (not start or not end or not origin or not spacing): assert(False)
@@ -283,16 +334,13 @@ class VtkFile:
                 
         return self
 
-    def closeGrid(self, gridType):
-        """ Open grid section.
-
-            PARAMETERS:
-                gridType: one of the VtkFileType, e.g. VtkStructuredGrid.
+    def closeGrid(self):
+        """ Close grid element.
 
             RETURNS:
                 this VtkFile to allow chained calls.
         """
-        self.xml.closeElement(gridType.name)
+        self.xml.closeElement(self.ftype.name)
 
     
     def addData(self, name, dtype, nelem, ncomp):
@@ -308,43 +356,63 @@ class VtkFile:
 
         #TODO: Check if 4 is platform independent
         self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
+        return self
 
-    def appendData(self, data = None, dtype = None, nelem = None, ncomp = None):
+    def appendHeader(self, dtype, nelem, ncomp):
+        """ This function only writes the size of the data block that will be appended.
+            The data itself must be written immediately after calling this function.
+            
+            PARAMETERS:
+                dtype: string with data type representation (same as numpy). For example, 'float64'
+                nelem: number of elements.
+                ncomp: number of components, 1 (scalar) or 3 (vector).
+        """
         cdef int block_size, dsize
-        cdef void *p
-        cdef FILE *f
 
         self.openAppendedData()
+        dsize = np_to_vtk[dtype].size
+        block_size = dsize * ncomp * nelem
+        _writeBlockSize(self.xml.stream, block_size)
 
-        if data is not None:
+            
+    def appendData(self, data):
+        """ Append data to binary section.
+            This function writes the header section and the data to the binary file.
+
+            PARAMETERS:
+                data: one numpy array or a tuple with 3 numpy arrays. If a tuple, the individual
+                      arrays must represent the components of a vector field.
+                      All arrays must be one dimensional or 3D with Fortran order.
+                      The order of the arrays must coincide with the numbering scheme of the grid.
+            
+            RETURNS:
+                this VtkFile to allow chained calls
+
+            TODO: Extend this function to accept contiguous C order arrays.
+        """
+
+        cdef int block_size, nelem   # VTK expect and int32 for this number 
+        self.openAppendedData()
+
+        if type(data).__name__ == 'tuple': # 3 numpy arrays
+            ncomp = len(data)
+            assert (ncomp == 3)
+            dsize = data[0].dtype.itemsize
+            nelem = data[0].size
+            block_size = ncomp * nelem * dsize
+            _writeBlockSize(self.xml.stream, block_size)
+            x, y, z = data[0], data[1], data[2]
+            _writeArraysToFile(self.xml.stream, x, y, z)
+
+        else: # single numpy array
+            ncomp = 1       
             dsize = data.dtype.itemsize
             nelem = data.size
-            ncomp = 1             # change this for 3 components
+            block_size = ncomp * nelem * dsize
+            _writeBlockSize(self.xml.stream, block_size)
+            _writeArrayToFile(self.xml.stream, data)
 
-        elif dtype and nelem and ncomp:
-            dsize = np_to_vtk[dtype].size
-
-        else:
-            assert(False)
-        
-        # Write data block size
-        block_size = dsize * ncomp * nelem
-        self.xml.stream.flush()                 # flush the stream buffer
-        f = PyFile_AsFile(self.xml.stream)
-        PyFile_IncUseCount(self.xml.stream)
-        fwrite(&block_size, sizeof(int), 1, f)
-
-        # Write data array if present
-        if data is not None:
-            # Check if array is contiguous and it has Fortran order
-            # TODO: Make sure we release the lock for the file
-            if not PyArray_ISFARRAY(data): assert(False)
-
-            p = PyArray_DATA(data)
-            fwrite(p, data.dtype.itemsize, data.size, f)
-        
-        # Release file
-        PyFile_DecUseCount(self.xml.stream)
+        return self
 
     def openAppendedData(self):
         """ 
@@ -360,8 +428,14 @@ class VtkFile:
             Close binary section.
             It is not necessary to explicitly call this function.
         """
-
         self.xml.closeElement("AppendedData")
+
+    def openElement(self, tagName):
+        """ Useful to add elements such as: Coordinates, Points, Verts, etc. """
+        self.xml.openElement(tagName)
+
+    def closeElement(self, tagName):
+        self.xml.closeElement(tagName)
 
     def save(self):
         if self.appendedDataIsOpen:
