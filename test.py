@@ -11,7 +11,7 @@ y = np.arange(0, ly + 0.1*dy, dy, dtype='float64')
 z = np.arange(0, lz + 0.1*dz, dz, dtype='float64')
 start, end = (0,0,0), (nx, ny, nz)
 
-w = VtkFile("./data", VtkRectilinearGrid)
+w = VtkFile("./evtk_test", VtkRectilinearGrid)
 w.openGrid(start = start, end = end)
 w.openPiece( start = start, end = end)
 
