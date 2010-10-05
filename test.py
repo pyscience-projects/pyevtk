@@ -1,4 +1,4 @@
-from vtk import VtkFile, VtkRectilinearGrid
+from cevtk import VtkFile, VtkRectilinearGrid
 import numpy as np
 
 nx, ny, nz = 6, 6, 2
