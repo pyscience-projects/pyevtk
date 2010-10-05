@@ -34,6 +34,7 @@ setup(
     cmdclass = {'build_ext': build_ext},
     packages = ['evtk', 'evtk.examples'],
     package_dir = {'evtk' : 'src'},
-    ext_modules = [ext]
+    ext_modules = [ext],
+    data_files = [ ('', 'LICENSE')]
 )
 
