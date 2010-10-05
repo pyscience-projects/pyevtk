@@ -1,12 +1,12 @@
+#! /usr/bin/env python
+
 # **************************************************************
 # * Example of how to use the high level gridToVTK function.   *
 # * This example shows how to export a structured grid.        *
 # * Author: Paulo A. Herrera                                   *
-# * Created: Mon 04 Oct 2010 01:25:35 PM CEST                  *
-# * Last Modified: Mon 04 Oct 2010 01:25:35 PM CEST            *
 # **************************************************************
 
-from vtk import gridToVTK
+from evtk.hl import gridToVTK
 import numpy as np
 import random as rnd
 

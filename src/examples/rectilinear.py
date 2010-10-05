@@ -1,12 +1,12 @@
+#! /usr/bin/env python
+
 # **************************************************************
 # * Example of how to use the high level gridToVTK function.   *
 # * This example shows how to export a rectilinear grid.       *
 # * Author: Paulo A. Herrera                                   *
-# * Created: Mon 04 Oct 2010 12:55:36 PM CEST                  *
-# * Last Modified: Mon 04 Oct 2010 12:55:36 PM CEST            *
 # **************************************************************
 
-from vtk import gridToVTK
+from evtk.hl import gridToVTK
 import numpy as np
 
 # Dimensions

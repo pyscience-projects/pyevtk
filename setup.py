@@ -15,7 +15,6 @@ setup(
     cmdclass = {'build_ext': build_ext},
     packages = ['evtk', 'evtk.examples'],
     package_dir = {'evtk' : 'src'},
-    #py_modules = ['hlevtk'],
     ext_modules = [ext]
 )
 

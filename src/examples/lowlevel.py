@@ -1,4 +1,11 @@
-from cevtk import VtkFile, VtkRectilinearGrid
+#! /usr/bin/env python
+
+# **************************************************************
+# * Example of how to use the low level VtkFile class.         *
+# * Author: Paulo A. Herrera                                   *
+# **************************************************************
+
+from evtk.vtk import VtkFile, VtkRectilinearGrid
 import numpy as np
 
 nx, ny, nz = 6, 6, 2
@@ -15,27 +22,25 @@ w = VtkFile("./evtk_test", VtkRectilinearGrid)
 w.openGrid(start = start, end = end)
 w.openPiece( start = start, end = end)
 
-#temp = np.zeros( [nx + 1, ny + 1, nz + 1], dtype="float64", order='F')
+# Point data
 temp = np.random.rand(npoints)
 vx = vy = vz = np.zeros([nx + 1, ny + 1, nz + 1], dtype="float64", order = 'F')
-
-# Point data
 w.openData("Point", scalars = "Temperature", vectors = "Velocity")
-w.addData("Temperature", "float64", npoints, 1)
-w.addData("Velocity", "float64", npoints, 3)
+w.addData("Temperature", temp)
+w.addData("Velocity", (vx,vy,vz))
 w.closeData("Point")
 
 # Cell data
 pressure = np.zeros([nx, ny, nz], dtype="float64", order='F')
 w.openData("Cell", scalars = "Pressure")
-w.addData("Pressure", "float64", ncells, 1)
+w.addData("Pressure", pressure)
 w.closeData("Cell")
 
 # Coordinates of cell vertices
 w.openElement("Coordinates")
-w.addData("x_coordinates", 'float64', nx + 1, 1);
-w.addData("y_coordinates", 'float64', ny + 1, 1);
-w.addData("z_coordinates", 'float64', nz + 1, 1);
+w.addData("x_coordinates", x);
+w.addData("y_coordinates", y);
+w.addData("z_coordinates", z);
 w.closeElement("Coordinates");
 
 w.closePiece()

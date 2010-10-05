@@ -1,11 +1,11 @@
+#! /usr/bin/env python
+
 # **************************************************************
 # * Example of how to use the high level imageToVTK function.  *
 # * Author: Paulo A. Herrera                                   *
-# * Created: Mon 04 Oct 2010 10:22:08 AM CEST                  *
-# * Last Modified: Mon 04 Oct 2010 11:16:19 AM CEST            *
 # **************************************************************
 
-from vtk import imageToVTK
+from evtk.hl import imageToVTK
 import numpy as np
 
 # Dimensions

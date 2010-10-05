@@ -1,11 +1,11 @@
+#! /usr/bin/env python
+
 # **************************************************************
 # * Example of how to use the high level pointsToVTK function. *
 # * Author: Paulo A. Herrera                                   *
-# * Created: Mon 04 Oct 2010 02:40:35 PM CEST                  *
-# * Last Modified: Tue 05 Oct 2010 11:45:45 AM CEST            *
 # **************************************************************
 
-from evtk.hlevtk import pointsToVTK
+from evtk.hl import pointsToVTK
 import numpy as np
 
 npoints = 100
