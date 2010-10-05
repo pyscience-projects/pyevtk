@@ -21,8 +21,10 @@ cdef extern from "Python.h":
 cdef extern from "numpy/arrayobject.h":
     void import_array()
     void *PyArray_DATA(object obj)
+    void* PyArray_GETPTR3(object obj, Py_ssize_t i, Py_ssize_t j, Py_ssize_t k)
     int PyArray_ISCARRAY(object obj)
     int PyArray_ISFARRAY(object obj)
+
 # Initialize Numpy module
 import_array()
 
@@ -69,6 +71,38 @@ VtkInt64   = VtkDataType(8, "Int64")
 VtkUInt64  = VtkDataType(8, "UInt64")
 VtkFloat32 = VtkDataType(4, "Float32")
 VtkFloat64 = VtkDataType(8, "Float64")
+
+cdef class VtkCellType:
+    cdef readonly unsigned char tid
+    cdef readonly char *name
+
+    def __init__(self, int tid, char *name):
+        self.tid = tid
+        self.name = name
+
+    def __str__(self):
+        return "VtkCellType( %s ) \n" % ( self.name )
+
+#    CELL TYPES
+VtkVertex = VtkCellType(1, "Vertex")
+VtkPolyVertex = VtkCellType(2, "PolyVertex")
+VtkLine = VtkCellType(3, "Line")
+VtkPolyLine = VtkCellType(4, "PolyLine")
+VtkTriangle = VtkCellType(5, "Triangle")
+VtkTriangleStrip = VtkCellType(6, "TriangleStrip")
+VtkPolygon = VtkCellType(7, "Polygon")
+VtkPixel = VtkCellType(8, "Pixel")
+VtkQuad = VtkCellType(9, "Quad")
+VtkTetra = VtkCellType(10, "Tetra")
+VtkVoxel = VtkCellType(11, "Voxel")
+VtkHexahedron = VtkCellType(12, "Hexahedron")
+VtkWedge = VtkCellType(13, "Wedge")
+VtkPyramid = VtkCellType(14, "Pyramid")
+VtkQuadraticEdge = VtkCellType(21, "Quadratic_Edge")
+VtkQuadraticTriangle = VtkCellType(22, "Quadratic_Triangle")
+VtkQuadraticQuad = VtkCellType(23, "Quadratic_Quad")
+VtkQuadraticTetra = VtkCellType(24, "Quadratic_Tetra")
+VtkQuadraticHexahedron = VtkCellType(25, "Quadratic_Hexahedron")
 
 # Map numpy to VTK data types
 np_to_vtk = { 'int8'    : VtkInt8,
@@ -133,7 +167,7 @@ class XmlWriter:
         return self
     
 
-# Helper function
+# Helper functions
 def _mix_extents(start, end):
     assert (len(start) == len(end) == 3)
     string = "%d %d %d %d %d %d" % (start[0], end[0], start[1], end[1], start[2], end[2])
@@ -160,15 +194,27 @@ cdef void _writeBlockSize(object stream, int block_size):
 cdef void _writeArrayToFile(object stream, object data):
     cdef FILE *f
     cdef void *p
-
-    # Check if array is contiguous and it has Fortran order
-    assert(PyArray_ISFARRAY(data))
+    cdef Py_ssize_t nx, ny, nz
+    cdef Py_ssize_t i, j, k
 
     stream.flush()          
     f = PyFile_AsFile(stream)
     PyFile_IncUseCount(stream)
-    p = PyArray_DATA(data)
-    fwrite(p, data.dtype.itemsize, data.size, f)
+
+    # NOTE: If array is 1D, it must have FORTRAN order
+    if data.ndim == 1 or PyArray_ISFARRAY(data):
+        p = PyArray_DATA(data)
+        fwrite(p, data.dtype.itemsize, data.size, f)
+    elif data.ndim == 3 and PyArray_ISCARRAY(data):
+        shape = data.shape
+        nx, ny, nz = shape[0], shape[1], shape[2]
+        for k in range(nz):
+            for j in range(ny):
+                for i in range(nx):
+                    p = PyArray_GETPTR3(data, i, j, k)
+                    fwrite(p, data.dtype.itemsize, 1, f)
+    else:
+        assert False
         
     # Release file
     PyFile_DecUseCount(stream)
@@ -176,32 +222,256 @@ cdef void _writeArrayToFile(object stream, object data):
 cdef void _writeArraysToFile(object stream, object x, object y, object z):
     cdef FILE *f
     cdef char *px, *py, *pz    # Hack to avoid checking for correct type cast
-    cdef Py_ssize_t nitems, i
+    cdef Py_ssize_t nitems, i, j, k, nx, ny, nz
     cdef int itemsize
 
-    # Check if arrays are contiguous and have Fortran order
+    # Check if arrays have same shape and data type
     assert ( x.size == y.size == z.size )
     assert ( x.dtype.itemsize == y.dtype.itemsize == z.dtype.itemsize )
-    assert ( PyArray_ISFARRAY(x) and PyArray_ISFARRAY(y) and PyArray_ISFARRAY(z) )
+  
+    nitems = x.size
+    itemsize = x.dtype.itemsize
 
     stream.flush()
     f = PyFile_AsFile(stream)
     PyFile_IncUseCount(stream)
+  
+    if ( (x.ndim == 1 and y.ndim == 1 and z.ndim == 1) or 
+         (PyArray_ISFARRAY(x) and PyArray_ISFARRAY(y) and PyArray_ISFARRAY(z)) ):
+        px = <char *>PyArray_DATA(x)
+        py = <char *>PyArray_DATA(y)
+        pz = <char *>PyArray_DATA(z)
+        for i in range(nitems):
+            fwrite( &px[i * itemsize], itemsize, 1, f )
+            fwrite( &py[i * itemsize], itemsize, 1, f )
+            fwrite( &pz[i * itemsize], itemsize, 1, f )
 
-    nitems = x.size
-    itemsize = x.dtype.itemsize
-    px = <char *>PyArray_DATA(x)
-    py = <char *>PyArray_DATA(y)
-    pz = <char *>PyArray_DATA(z)
-    
-    for i in range(nitems):
-        fwrite( &px[i * itemsize], itemsize, 1, f )
-        fwrite( &py[i * itemsize], itemsize, 1, f )
-        fwrite( &pz[i * itemsize], itemsize, 1, f )
+    elif ( (x.ndim == 3 and y.ndim == 3 and z.ndim == 3) and
+           (PyArray_ISCARRAY(x) and PyArray_ISCARRAY(y) and PyArray_ISCARRAY(z)) ):
+        shape = x.shape
+        nx, ny, nz = shape[0], shape[1], shape[2] 
+        for k in range(nz):
+            for j in range(ny):
+                for i in range(nx):
+                    px = <char *>PyArray_GETPTR3(x, i, j, k)
+                    py = <char *>PyArray_GETPTR3(y, i, j, k)
+                    pz = <char *>PyArray_GETPTR3(z, i, j, k)
+                    fwrite(px, itemsize, 1, f)
+                    fwrite(py, itemsize, 1, f)
+                    fwrite(pz, itemsize, 1, f)
+    else:
+        assert (False)
+
 
     # Release file
     PyFile_DecUseCount(stream)
 
+# *********************************
+# *     High level functions      *
+# *********************************
+
+def _addDataArrayToFile(vtkFile, name, data):
+    if type(data).__name__ == "tuple": # vector data
+        assert (len(data) == 3)
+        x = data[0]
+        vtkFile.addData(name, x.dtype.name, x.size, 3)
+    else:
+        vtkFile.addData(name, data.dtype.name, data.size, 1)
+
+def _addDataToFile(vtkFile, cellData, pointData):
+    # Point data
+    if pointData <> None:
+        keys = pointData.keys()
+        vtkFile.openData("Point", scalars = keys[0])
+        for key in keys:
+            data = pointData[key]
+            _addDataArrayToFile(vtkFile, key, data)
+        vtkFile.closeData("Point")
+
+    # Cell data
+    if cellData <> None:
+        keys = cellData.keys()
+        vtkFile.openData("Cell", scalars = keys[0])
+        for key in keys:
+            data = cellData[key]
+            _addDataArrayToFile(vtkFile, key, data)
+        vtkFile.closeData("Cell")
+
+def _appendDataToFile(vtkFile, cellData, pointData):
+    # Append data to binary section
+    if pointData <> None:
+        keys = pointData.keys()
+        for key in keys:
+            data = pointData[key]
+            vtkFile.appendData(data)
+
+    if cellData <> None:
+        keys = cellData.keys()
+        for key in keys:
+            data = cellData[key]
+            vtkFile.appendData(data)
+
+def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData = None, pointData = None ):
+    """ Exports data values as a rectangular image.
+        
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            origin: grid origin (default = (0,0,0))
+            spacing: grid spacing (default = (1,1,1))
+            cellData: dictionary containing arrays with cell centered data.
+                      Keys should be the names of the data arrays.
+                      Arrays must have the same dimensions in all directions and must contain 
+                      only scalar data.
+            nodeData: dictionary containing arrays with node centered data.
+                      Keys should be the names of the data arrays.
+                      Arrays must have same dimension in each direction and 
+                      they should be equal to the dimensions of the cell data plus one and
+                      must contain only scalar data.
+
+        NOTE: At least, cellData or pointData must be present to infer the dimensions of the image.
+    """
+    assert (cellData <> None or pointData <> None)
+    
+    # Extract dimensions
+    start = (0,0,0)
+    end = None
+    if cellData <> None:
+        keys = cellData.keys()
+        data = cellData[keys[0]]
+        end = data.shape
+    elif pointData <> None:
+        keys = pointData.keys()
+        data = pointData[keys[0]]
+        end = data.shape
+        end = (end[0] - 1, end[1] - 1, end[1] - 1)
+
+    # Write data to file
+    w = VtkFile(path, VtkImageData)
+    w.openGrid(start = start, end = end, origin = origin, spacing = spacing)
+    w.openPiece(start = start, end = end)
+    _addDataToFile(w, cellData, pointData)
+    w.closePiece()
+    w.closeGrid()
+    _appendDataToFile(w, cellData, pointData)
+    w.save()
+
+
+def gridToVTK(path, x, y, z, cellData = None, pointData = None):
+    """
+        Writes data values as a rectilinear or rectangular grid.
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: coordinates of the nodes of the grid. They can be 1D or 3D depending if
+                     the grid should be saved as a rectilinear or logically structured grid, respectively.
+                     Arrays should contain coordinates of the nodes of the grid.
+                     If arrays are 1D, then the grid should be Cartesian, i.e. faces in all cells are orthogonal.
+                     If arrays are 3D, then the grid should be logically structured with hexahedral cells.
+                     In both cases the arrays dimenions should be equal to the number of nodes of the grid.
+            cellData: dictionary containing arrays with cell centered data.
+                      Keys should be the names of the data arrays.
+                      Arrays must have the same dimensions in all directions and must contain 
+                      only scalar data.
+            nodeData: dictionary containing arrays with node centered data.
+                      Keys should be the names of the data arrays.
+                      Arrays must have same dimension in each direction and 
+                      they should be equal to the dimensions of the cell data plus one and
+                      must contain only scalar data.
+    """
+
+    # Extract dimensions
+    start = (0,0,0)
+    isRect = False
+    nx = ny = nz = 0
+    ftype = VtkStructuredGrid
+
+    if (x.ndim == 1 and y.ndim == 1 and z.ndim == 1):
+        nx, ny, nz = x.size - 1, y.size - 1, z.size - 1
+        isRect = True
+        ftype = VtkRectilinearGrid
+    elif (x.ndim == 3 and y.ndim == 3 and z.ndim == 3):
+        s = x.shape
+        nx, ny, nz = s[0] - 1, s[1] - 1, s[2] - 1
+    else:
+        assert(False)
+    end = (nx, ny, nz)
+
+    w =  VtkFile(path, ftype)
+    w.openGrid(start = start, end = end)
+    w.openPiece(start = start, end = end)
+
+    if isRect:
+        w.openElement("Coordinates")
+        _addDataArrayToFile(w, "x_coordinates", x)
+        _addDataArrayToFile(w, "y_coordinates", y)
+        _addDataArrayToFile(w, "z_coordinates", z)
+        w.closeElement("Coordinates")
+    else:
+        w.openElement("Points")
+        _addDataArrayToFile(w, "points", (x,y,z))
+        w.closeElement("Points")
+
+    _addDataToFile(w, cellData, pointData)
+    w.closePiece()
+    w.closeGrid()
+    # Write coordinates
+    if isRect:
+        w.appendData(x).appendData(y).appendData(z)
+    else:
+        w.appendData( (x,y,z) )
+    # Write data
+    _appendDataToFile(w, cellData, pointData)
+    w.save()
+
+def pointsToVTK(path, x, y, z, data):
+    """
+        Export points and associated data as an unstructured grid.
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: 1D arrays with coordinates of the points.
+            data: dictionary with variables associated to each point.
+                  Keys should be the names of the variable stored in each array.
+                  All arrays must have the same number of elements.
+    """
+    assert (x.size == y.size == z.size)
+    npoints = x.size
+    
+    # create some temporary arrays to write grid topology
+    offsets = np.arange(start = 1, stop = npoints + 1, dtype = 'int32')   # index of last node in each cell
+    connectivity = np.arange(npoints, dtype = 'int32')                   # each point is only connected to itself
+    cell_types = np.empty(npoints, dtype = 'uint8') 
+   
+    cell_types[:] = VtkVertex.tid
+
+    w = VtkFile(path, VtkUnstructuredGrid)
+    w.openGrid()
+    w.openPiece(ncells = npoints, npoints = npoints)
+    
+    w.openElement("Points")
+    _addDataArrayToFile(w, "points", (x,y,z))
+    w.closeElement("Points")
+    w.openElement("Cells")
+    _addDataArrayToFile(w, "connectivity", connectivity)
+    _addDataArrayToFile(w, "offsets", offsets)
+    _addDataArrayToFile(w, "types", cell_types)
+    w.closeElement("Cells")
+    
+    _addDataToFile(w, cellData = None, pointData = data)
+
+    w.closePiece()
+    w.closeGrid()
+    w.appendData( (x,y,z) )
+    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
+
+    _appendDataToFile(w, cellData = None, pointData = data)
+
+    w.save()
+
+
+# *********************************
+# *       Low level class         *
+# *********************************
 
 class VtkFile:
     
@@ -253,7 +523,7 @@ class VtkFile:
             self.xml.addAttributes( Extent = ext)
         
         elif (ncells and npoints):
-            self.xml.addAttributes(npoints = npoints, ncells = ncells)
+            self.xml.addAttributes(NumberOfPoints = npoints, NumberOfCells = ncells)
 
         elif (npoints and nverts and nlines and nstrips and npolys):
             self.xml.addAttributes(npoints = npoints, nverts = nverts,
