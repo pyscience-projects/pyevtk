@@ -1,9 +1,34 @@
+# *************************************************************************
+# * Copyright 2010 Paulo Herrera                                          *
+# *                                                                       *
+# * This file is part of EVTK.                                            *
+# *                                                                       *
+# * EVTK is free software: you can redistribute it and/or modify          *
+# * it under the terms of the GNU General Public License as published by  *
+# * the Free Software Foundation, either version 3 of the License, or     *
+# * (at your option) any later version.                                   *
+# *                                                                       *
+# * EVTK is distributed in the hope that it will be useful,               *
+# * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+# * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
+# * GNU General Public License for more details.                          *
+# *                                                                       *
+# * You should have received a copy of the GNU General Public License     *
+# * along with EVTK.  If not, see <http://www.gnu.org/licenses/>.         *
+# *************************************************************************
+
+# **************************************
+# *  High level Python library to       *
+# *  export data to binary VTK file.   *
+# *  Author: Paulo A. Herrera          *
+# **************************************
+
 from vtk import * # VtkFile, VtkUnstructuredGrid, etc.
 import numpy as np
 
-# *********************************
-# *     High level functions      *
-# *********************************
+# =================================
+#       Helper functions      
+# =================================
 def _addDataToFile(vtkFile, cellData, pointData):
     # Point data
     if pointData <> None:
@@ -37,6 +62,9 @@ def _appendDataToFile(vtkFile, cellData, pointData):
             data = cellData[key]
             vtkFile.appendData(data)
 
+# =================================
+#       High level functions      
+# =================================
 def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData = None, pointData = None ):
     """ Exports data values as a rectangular image.
         
