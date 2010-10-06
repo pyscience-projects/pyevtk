@@ -17,11 +17,15 @@
 # * along with EVTK.  If not, see <http://www.gnu.org/licenses/>.         *
 # *************************************************************************
 
+# This script must be used to re-generate the C file and compile the extension
+# module. It is only useful for development.
+
 from distutils.core import setup
 from distutils.extension import Extension
+from Cython.Distutils import build_ext
 import numpy as np
 
-ext = Extension('evtk.cevtk', ['src/cevtk.c'], include_dirs = [np.get_include()])
+ext = Extension('evtk.cevtk', ['src/cevtk.pyx'], include_dirs = [np.get_include()])
 
 setup(
     name = 'evtk',
@@ -30,9 +34,10 @@ setup(
     author = 'Paulo Herrera',
     author_email = 'pauloa.herrera@gmail.com',
     url = '',
+    cmdclass = {'build_ext': build_ext},
     packages = ['evtk', 'evtk.examples'],
     package_dir = {'evtk' : 'src'},
-    package_data = {'evtk': ['LICENSE']},
     ext_modules = [ext],
+    data_files = [ ('', 'LICENSE')]
 )
 
