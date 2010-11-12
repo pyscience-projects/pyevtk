@@ -18,7 +18,7 @@
 # *************************************************************************
 
 # **************************************
-# *  High level Python library to       *
+# *  High level Python library to      *
 # *  export data to binary VTK file.   *
 # *  Author: Paulo A. Herrera          *
 # **************************************
@@ -81,6 +81,9 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
                       Arrays must have same dimension in each direction and 
                       they should be equal to the dimensions of the cell data plus one and
                       must contain only scalar data.
+         
+         RETURNS:
+            Full path to saved file.
 
         NOTE: At least, cellData or pointData must be present to infer the dimensions of the image.
     """
@@ -108,6 +111,7 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
     w.closeGrid()
     _appendDataToFile(w, cellData, pointData)
     w.save()
+    return w.getFileName()
 
 
 def gridToVTK(path, x, y, z, cellData = None, pointData = None):
@@ -131,8 +135,11 @@ def gridToVTK(path, x, y, z, cellData = None, pointData = None):
                       Arrays must have same dimension in each direction and 
                       they should be equal to the dimensions of the cell data plus one and
                       must contain only scalar data.
-    """
 
+        RETURNS:
+            Full path to saved file.
+
+    """
     # Extract dimensions
     start = (0,0,0)
     isRect = False
@@ -176,6 +183,8 @@ def gridToVTK(path, x, y, z, cellData = None, pointData = None):
     # Write data
     _appendDataToFile(w, cellData, pointData)
     w.save()
+    return w.getFileName()
+
 
 def pointsToVTK(path, x, y, z, data):
     """
@@ -187,6 +196,10 @@ def pointsToVTK(path, x, y, z, data):
             data: dictionary with variables associated to each point.
                   Keys should be the names of the variable stored in each array.
                   All arrays must have the same number of elements.
+
+        RETURNS:
+            Full path to saved file.
+
     """
     assert (x.size == y.size == z.size)
     npoints = x.size
@@ -221,4 +234,5 @@ def pointsToVTK(path, x, y, z, data):
     _appendDataToFile(w, cellData = None, pointData = data)
 
     w.save()
+    return w.getFileName()
 

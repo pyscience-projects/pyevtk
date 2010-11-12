@@ -161,7 +161,7 @@ class VtkGroup:
         # TODO: Check what the other attributes are for.
         filename = os.path.relpath(filepath)
         self.xml.openElement("DataSet")
-        self.xml.addAttributes(timestep = sim_time, group = "", part = "0", file = filepath)
+        self.xml.addAttributes(timestep = sim_time, group = "", part = "0", file = filename)
         self.xml.closeElement()
         
 
@@ -190,7 +190,6 @@ class VtkFile:
     def getFileName(self):
         """ Returns absolute path to this file. """
         return  os.path.abspath(self.filename)
-
 
     def openPiece(self, start = None, end = None,
                         npoints = None, ncells = None,
