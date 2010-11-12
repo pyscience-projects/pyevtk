@@ -151,15 +151,19 @@ class VtkGroup:
         self.xml.closeElement("VTKFile")
         self.xml.close()
     
-    def addFile(self, filepath, sim_time):
+    def addFile(self, filepath, sim_time, root = None):
         """ Adds file to this VTK group.
 
             PARAMETERS:
                 filepath: full path to VTK file.
                 sim_time: simulated time.
+                root: filename is written relative to this directory
         """
         # TODO: Check what the other attributes are for.
-        filename = os.path.relpath(filepath)
+        if root == None:
+            filename = os.path.relpath(filepath)
+        else:
+            filename = os.path.relpath(filepath, start = root)
         self.xml.openElement("DataSet")
         self.xml.addAttributes(timestep = sim_time, group = "", part = "0", file = filename)
         self.xml.closeElement()
