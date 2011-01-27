@@ -32,7 +32,7 @@ cdef extern from "stdio.h":
     int fprintf(FILE *stream, char *buf, ...)
     int printf(char *buf, ...)
     size_t fwrite (void *array, size_t size, size_t count, FILE *stream)
-
+   
 cdef extern from "Python.h":
     ctypedef struct PyFileObject:
         pass
@@ -46,6 +46,8 @@ cdef extern from "numpy/arrayobject.h":
     void* PyArray_GETPTR3(object obj, Py_ssize_t i, Py_ssize_t j, Py_ssize_t k)
     int PyArray_ISCARRAY(object obj)
     int PyArray_ISFARRAY(object obj)
+
+cimport numpy as np # needed for int32_t definition
 
 # Initialize Numpy module
 import_array()
@@ -70,7 +72,7 @@ cdef void _writeBlockSize(object stream, int block_size):
     stream.flush()          
     f = PyFile_AsFile(stream)
     PyFile_IncUseCount(stream)
-    fwrite(&block_size, sizeof(int), 1, f)   # This code is not portable. We should use sizeof(int32_t) instead.
+    fwrite(&block_size, sizeof(np.int32_t), 1, f)   # FIXED. This code is not portable. We should use sizeof(int32_t) instead.
     PyFile_DecUseCount(stream)
 
 cdef void _writeArrayToFile(object stream, object data):
