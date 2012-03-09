@@ -63,11 +63,11 @@ DEVELOPER NOTES:
 ================
 
 It is useful to build and install the package to a temporary location without
-touching the global python site-packages directory while developing,. To do
+touching the global python site-packages directory while developing. To do
 this, while in the root directory, one can type:
 
-    1. python setup.py build --debug install --prefix=./tmp 2. export
-PYTHONPATH=./tmp/lib/python2.6/site-packages/:$PYTHONPATH
+    1. python setup.py build --debug install --prefix=./tmp
+    2. export PYTHONPATH=./tmp/lib/python2.6/site-packages/:$PYTHONPATH
 
 NOTE: you may have to change the Python version depending of the installed
 version on your system.

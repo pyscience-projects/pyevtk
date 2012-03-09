@@ -48,6 +48,7 @@ cdef extern from "Python.h":
 cdef extern from "numpy/arrayobject.h":
     void import_array()
     void *PyArray_DATA(object obj)
+    void* PyArray_GETPTR2(object obj, Py_ssize_t i, Py_ssize_t j)
     void* PyArray_GETPTR3(object obj, Py_ssize_t i, Py_ssize_t j, Py_ssize_t k)
     int PyArray_ISCARRAY(object obj)
     int PyArray_ISFARRAY(object obj)
@@ -69,6 +70,9 @@ def writeArrayToFile(stream, data):
 def writeArraysToFile(stream, x, y, z):
     _writeArraysToFile(stream, x, y, z)
 
+def writeArrayToFile2D(object stream, object data):
+    _writeArray2DToFile(stream, data)
+
 # ================================
 #        C functions
 # ================================ 
@@ -88,13 +92,16 @@ cdef void _writeArrayToFile(object stream, object data):
 
     stream.flush()          
     f = PyFile_AsFile(stream)
-    PyFile_IncUseCount(stream)
 
     # NOTE: If array is 1D, it must have FORTRAN order
     if data.ndim == 1 or PyArray_ISFARRAY(data):
+        PyFile_IncUseCount(stream)
         p = PyArray_DATA(data)
         fwrite(p, data.dtype.itemsize, data.size, f)
+        PyFile_DecUseCount(stream)
+
     elif data.ndim == 3 and PyArray_ISCARRAY(data):
+        PyFile_IncUseCount(stream)
         shape = data.shape
         nx, ny, nz = shape[0], shape[1], shape[2]
         for k in range(nz):
@@ -102,12 +109,34 @@ cdef void _writeArrayToFile(object stream, object data):
                 for i in range(nx):
                     p = PyArray_GETPTR3(data, i, j, k)
                     fwrite(p, data.dtype.itemsize, 1, f)
-    else:
-        assert False
-        
-    # Release file
-    PyFile_DecUseCount(stream)
+        PyFile_DecUseCount(stream)
 
+    else:
+        assert False, "ERROR at _writeArrayToFile"
+
+# ==============================================================================
+cdef void _writeArray2DToFile(object stream, object data):
+    # this is only used to write 3 components arrays
+    cdef FILE *f
+    cdef void *p
+    cdef Py_ssize_t nx, ny
+    cdef Py_ssize_t i, j
+
+    stream.flush()          
+    f = PyFile_AsFile(stream)
+
+    assert data.ndim == 2, "Bad rank of array"
+    PyFile_IncUseCount(stream)
+    shape = data.shape
+    nx, ny = shape[0], shape[1]
+    assert (ny == 3)
+    for i in range(nx):
+        for j in range(ny):
+            p = PyArray_GETPTR2(data, i, j)
+            fwrite(p, data.dtype.itemsize, 1, f)
+    PyFile_DecUseCount(stream)
+    
+# ==============================================================================
 cdef void _writeArraysToFile(object stream, object x, object y, object z):
     cdef FILE *f
     cdef char *px, *py, *pz    # Hack to avoid checking for correct type cast
@@ -115,18 +144,18 @@ cdef void _writeArraysToFile(object stream, object x, object y, object z):
     cdef int itemsize
 
     # Check if arrays have same shape and data type
-    assert ( x.size == y.size == z.size )
-    assert ( x.dtype.itemsize == y.dtype.itemsize == z.dtype.itemsize )
+    assert ( x.size == y.size == z.size ), "Different array sizes."
+    assert ( x.dtype.itemsize == y.dtype.itemsize == z.dtype.itemsize ), "Different item sizes."
   
     nitems = x.size
     itemsize = x.dtype.itemsize
 
     stream.flush()
     f = PyFile_AsFile(stream)
-    PyFile_IncUseCount(stream)
-  
+     
     if ( (x.ndim == 1 and y.ndim == 1 and z.ndim == 1) or 
          (PyArray_ISFARRAY(x) and PyArray_ISFARRAY(y) and PyArray_ISFARRAY(z)) ):
+        PyFile_IncUseCount(stream)
         px = <char *>PyArray_DATA(x)
         py = <char *>PyArray_DATA(y)
         pz = <char *>PyArray_DATA(z)
@@ -134,11 +163,13 @@ cdef void _writeArraysToFile(object stream, object x, object y, object z):
             fwrite( &px[i * itemsize], itemsize, 1, f )
             fwrite( &py[i * itemsize], itemsize, 1, f )
             fwrite( &pz[i * itemsize], itemsize, 1, f )
+        PyFile_DecUseCount(stream)
 
     elif ( (x.ndim == 3 and y.ndim == 3 and z.ndim == 3) and
            (PyArray_ISCARRAY(x) and PyArray_ISCARRAY(y) and PyArray_ISCARRAY(z)) ):
         shape = x.shape
         nx, ny, nz = shape[0], shape[1], shape[2] 
+        PyFile_IncUseCount(stream)
         for k in range(nz):
             for j in range(ny):
                 for i in range(nx):
@@ -148,12 +179,14 @@ cdef void _writeArraysToFile(object stream, object x, object y, object z):
                     fwrite(px, itemsize, 1, f)
                     fwrite(py, itemsize, 1, f)
                     fwrite(pz, itemsize, 1, f)
+        # Release file
+        PyFile_DecUseCount(stream)
+
     else:
-        assert (False)
+        assert False, "ERROR at _writeArraysToFile"
 
 
-    # Release file
-    PyFile_DecUseCount(stream)
+    
 
 
 

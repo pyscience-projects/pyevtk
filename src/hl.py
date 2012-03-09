@@ -105,7 +105,7 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
         keys = pointData.keys()
         data = pointData[keys[0]]
         end = data.shape
-        end = (end[0] - 1, end[1] - 1, end[1] - 1)
+        end = (end[0] - 1, end[1] - 1, end[2] - 1)
 
     # Write data to file
     w = VtkFile(path, VtkImageData)
@@ -118,7 +118,7 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
     w.save()
     return w.getFileName()
 
-
+# ==============================================================================
 def gridToVTK(path, x, y, z, cellData = None, pointData = None):
     """
         Writes data values as a rectilinear or rectangular grid.
@@ -191,6 +191,7 @@ def gridToVTK(path, x, y, z, cellData = None, pointData = None):
     return w.getFileName()
 
 
+# ==============================================================================
 def pointsToVTK(path, x, y, z, data):
     """
         Export points and associated data as an unstructured grid.
@@ -211,7 +212,7 @@ def pointsToVTK(path, x, y, z, data):
     
     # create some temporary arrays to write grid topology
     offsets = np.arange(start = 1, stop = npoints + 1, dtype = 'int32')   # index of last node in each cell
-    connectivity = np.arange(npoints, dtype = 'int32')                   # each point is only connected to itself
+    connectivity = np.arange(npoints, dtype = 'int32')                    # each point is only connected to itself
     cell_types = np.empty(npoints, dtype = 'uint8') 
    
     cell_types[:] = VtkVertex.tid

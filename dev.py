@@ -44,6 +44,6 @@ setup(
     packages = ['evtk', 'evtk.examples'],
     package_dir = {'evtk' : 'src'},
     ext_modules = [ext],
-    data_files = [ ('', 'LICENSE')]
+    data_files = [ ("", "LICENSE")]
 )
 

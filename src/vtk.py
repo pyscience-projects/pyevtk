@@ -28,7 +28,7 @@
 # *  export data to binary VTK file.   *
 # **************************************
 
-from cevtk import writeBlockSize, writeArrayToFile, writeArraysToFile
+from cevtk import writeBlockSize, writeArrayToFile, writeArraysToFile, writeArrayToFile2D
 from xml import XmlWriter
 import sys
 import os
@@ -230,10 +230,15 @@ class VtkFile:
         
         elif (ncells and npoints):
             self.xml.addAttributes(NumberOfPoints = npoints, NumberOfCells = ncells)
-
-        elif (npoints and nverts and nlines and nstrips and npolys):
-            self.xml.addAttributes(npoints = npoints, nverts = nverts,
-                    nlines = nlines, nstrips = nstrips, npolys = npolys)
+       
+        elif npoints or nverts or nlines or nstrips or npolys:
+            if npoints is None: npoints = str(0)
+            if nverts is None: nverts = str(0)
+            if nlines is None: nlines = str(0)
+            if nstrips is None: nstrips = str(0)
+            if npolys is None: npolys = str(0)
+            self.xml.addAttributes(NumberOfPoints = npoints, NumberOfVerts = nverts,
+                                   NumberOfLines = nlines, NumberOfStrips = nstrips, NumberOfPolys = npolys)
         else:
             assert(False)
 
@@ -362,8 +367,13 @@ class VtkFile:
             assert (len(data) == 3)
             x = data[0]
             self.addHeader(name, x.dtype.name, x.size, 3)
-        else:
-            self.addHeader(name, data.dtype.name, data.size, 1)
+        elif type(data).__name__ == "ndarray":
+            if data.ndim == 1 or data.ndim == 3:
+                self.addHeader(name, data.dtype.name, data.size, 1)
+            elif data.ndim == 2  and data.shape[1] == 3:
+                self.addHeader(name, data.dtype.name, data.shape[0], 3)
+            else:
+                assert False, "Bad array shape: " + str(data.shape)
 
     def appendHeader(self, dtype, nelem, ncomp):
         """ This function only writes the size of the data block that will be appended.
@@ -406,14 +416,24 @@ class VtkFile:
             writeBlockSize(self.xml.stream, block_size)
             x, y, z = data[0], data[1], data[2]
             writeArraysToFile(self.xml.stream, x, y, z)
-
-        else: # single numpy array
-            ncomp = 1       
+            
+        elif type(data).__name__ == 'ndarray' and (data.ndim == 1 or data.ndim == 3): # single numpy array
+            ncomp = 1 
             dsize = data.dtype.itemsize
             nelem = data.size
             block_size = ncomp * nelem * dsize
             writeBlockSize(self.xml.stream, block_size)
             writeArrayToFile(self.xml.stream, data)
+         
+        elif type(data).__name__ == 'ndarray' and data.ndim == 2:
+                assert (data.shape[1] == 3), "Bad formed array with shape: " + str(data.shape)     
+                ncomp = 3
+                dsize = data.dtype.itemsize
+                nelem = data.shape[0]
+                block_size = ncomp * nelem * dsize
+                print "block size: ", block_size
+                writeBlockSize(self.xml.stream, block_size)
+                writeArrayToFile2D(self.xml.stream, data)
 
         return self
 
