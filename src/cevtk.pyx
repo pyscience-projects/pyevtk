@@ -188,5 +188,24 @@ cdef void _writeArraysToFile(object stream, object x, object y, object z):
 
     
 
+# ================================
+#  Debug functions        
+# ================================ 
+
+def checksizes():
+    print "sizeof(int): ", sizeof(int)
+    print "sizeof(long): ", sizeof(long)
+    #print "sizeof(int *): ", sizeof(int*)
+    #print "sizeof(double *): ", sizeof(double*)
+    print "sizeof(void *): ", sizeof(void*)
+    print "sizeof(np.int_t): ", sizeof(np.int_t)
+    print "sizeof(np.long_t): ", sizeof(np.long_t)
+    print "sizeof(np.float_t): ", sizeof(np.float_t)
+    print "sizeof(np.double_t): ", sizeof(np.double_t)
+    print "sizeof(np.int32_t): ", sizeof(np.int32_t)
+    print "sizeof(np.int64_t): ", sizeof(np.int64_t)
+
+
+
 
 
