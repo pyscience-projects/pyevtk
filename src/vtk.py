@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010 - 2012 Paulo A. Herrera. All rights reserved.                    * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -28,7 +28,7 @@
 # *  export data to binary VTK file.   *
 # **************************************
 
-from cevtk import writeBlockSize, writeArrayToFile, writeArraysToFile, writeArrayToFile2D
+from cevtk import writeBlockSize, writeBlockSize64Bit, writeArrayToFile, writeArraysToFile
 from xml import XmlWriter
 import sys
 import os
@@ -177,21 +177,30 @@ class VtkGroup:
 # ================================
 class VtkFile:
     
-    def __init__(self, filepath, ftype):
+    def __init__(self, filepath, ftype, largeFile = False):
         """
             PARAMETERS:
                 filepath: filename without extension.
                 ftype: file type, e.g. VtkImageData, etc.
+                largeFile: If size of the stored data cannot be represented by a UInt32.
         """
         self.ftype = ftype
         self.filename = filepath + ftype.ext
         self.xml = XmlWriter(self.filename)
         self.offset = 0  # offset in bytes after beginning of binary section
         self.appendedDataIsOpen = False
+        self.largeFile = largeFile
 
-        self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
-                                                      version = "0.1",
-                                                      byte_order = _get_byte_order())
+        if largeFile == False:
+            self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
+                                                          version = "0.1",
+                                                          byte_order = _get_byte_order())
+        else:
+            print "WARNING: output file only compatible with VTK 6.0 and later."
+            self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
+                                                          version = "1.0",
+                                                          byte_order = _get_byte_order(),
+                                                          header_type = "UInt64")
 
     def getFileName(self):
         """ Returns absolute path to this file. """
@@ -350,8 +359,11 @@ class VtkFile:
                                 offset = self.offset)
         self.xml.closeElement()
 
-        #TODO: Check if 4 is platform independent
-        self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
+        #TODO: Check if 4/8 is platform independent
+        if self.largeFile == False:
+            self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
+        else:
+            self.offset += nelem * ncomp * dtype.size + 8 # add 8 to indicate array size
         return self
 
     def addData(self, name, data):
@@ -370,10 +382,10 @@ class VtkFile:
         elif type(data).__name__ == "ndarray":
             if data.ndim == 1 or data.ndim == 3:
                 self.addHeader(name, data.dtype.name, data.size, 1)
-            elif data.ndim == 2  and data.shape[1] == 3:
-                self.addHeader(name, data.dtype.name, data.shape[0], 3)
             else:
                 assert False, "Bad array shape: " + str(data.shape)
+        else:
+            assert False, "Argument must be a Numpy array"
 
     def appendHeader(self, dtype, nelem, ncomp):
         """ This function only writes the size of the data block that will be appended.
@@ -387,7 +399,10 @@ class VtkFile:
         self.openAppendedData()
         dsize = np_to_vtk[dtype].size
         block_size = dsize * ncomp * nelem
-        writeBlockSize(self.xml.stream, block_size)
+        if self.largeFile == False:
+            writeBlockSize(self.xml.stream, block_size)
+        else:
+            writeBlockSize64Bit(self.xml.stream, block_size)
 
             
     def appendData(self, data):
@@ -413,7 +428,10 @@ class VtkFile:
             dsize = data[0].dtype.itemsize
             nelem = data[0].size
             block_size = ncomp * nelem * dsize
-            writeBlockSize(self.xml.stream, block_size)
+            if self.largeFile == False:
+                writeBlockSize(self.xml.stream, block_size)
+            else:
+                writeBlockSize64Bit(self.xml.stream, block_size)
             x, y, z = data[0], data[1], data[2]
             writeArraysToFile(self.xml.stream, x, y, z)
             
@@ -422,18 +440,14 @@ class VtkFile:
             dsize = data.dtype.itemsize
             nelem = data.size
             block_size = ncomp * nelem * dsize
-            writeBlockSize(self.xml.stream, block_size)
+            if self.largeFile == False:
+                writeBlockSize(self.xml.stream, block_size)
+            else:
+                writeBlockSize64Bit(self.xml.stream, block_size)
             writeArrayToFile(self.xml.stream, data)
          
-        elif type(data).__name__ == 'ndarray' and data.ndim == 2:
-                assert (data.shape[1] == 3), "Bad formed array with shape: " + str(data.shape)     
-                ncomp = 3
-                dsize = data.dtype.itemsize
-                nelem = data.shape[0]
-                block_size = ncomp * nelem * dsize
-                print "block size: ", block_size
-                writeBlockSize(self.xml.stream, block_size)
-                writeArrayToFile2D(self.xml.stream, data)
+        else:
+            assert False
 
         return self
 

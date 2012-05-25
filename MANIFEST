@@ -2,7 +2,6 @@ README.txt
 setup.py
 src/LICENSE
 src/__init__.py
-src/cevtk.c
 src/hl.py
 src/vtk.py
 src/xml.py
