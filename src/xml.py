@@ -30,7 +30,7 @@
 
 class XmlWriter:
     def __init__(self, filepath, addDeclaration = True):
-        self.stream = open(filepath, "w")
+        self.stream = open(filepath, "wb")
         self.openTag = False
         self.current = []
         if (addDeclaration): self.addDeclaration()
@@ -40,11 +40,12 @@ class XmlWriter:
         self.stream.close()
 
     def addDeclaration(self):
-        self.stream.write('<?xml version="1.0"?>')
+        self.stream.write(b'<?xml version="1.0"?>')
     
     def openElement(self, tag):
-        if self.openTag: self.stream.write(">")
-        self.stream.write("\n<%s" % tag)
+        if self.openTag: self.stream.write(b">")
+        st = "\n<%s" % tag
+        self.stream.write(str.encode(st))
         self.openTag = True
         self.current.append(tag)
         return self
@@ -53,25 +54,27 @@ class XmlWriter:
         if tag:
             assert(self.current.pop() == tag)
             if (self.openTag):
-                self.stream.write(">")
+                self.stream.write(b">")
                 self.openTag = False
-            self.stream.write("\n</%s>" % tag)
+            st = "\n</%s>" % tag
+            self.stream.write(str.encode(st))
         else:
-            self.stream.write("/>")
+            self.stream.write(b"/>")
             self.openTag = False
             self.current.pop()
         return self
 
     def addText(self, text):
         if (self.openTag):
-            self.stream.write(">\n")
+            self.stream.write(b">\n")
             self.openTag = False
-        self.stream.write(text)
+        self.stream.write(str.encode(text))
         return self
 
     def addAttributes(self, **kwargs):
         assert (self.openTag)
         for key in kwargs:
-            self.stream.write(' %s="%s"'%(key, kwargs[key]))
+            st = ' %s="%s"'%(key, kwargs[key])
+            self.stream.write(str.encode(st))
         return self
 

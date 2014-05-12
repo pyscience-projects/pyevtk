@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # ***********************************************************************************
-# * Copyright 2010 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010 - 2014 Paulo A. Herrera. All rights reserved.                    * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -56,9 +56,9 @@ z = np.zeros((nx + 1, ny + 1, nz + 1))
 for k in range(nz + 1):
     for j in range(ny + 1):
         for i in range(nx + 1):
-            x[i,j,k] = X[i] + (0.5 - rnd.random()) * 0.2 * dx 
-            y[i,j,k] = Y[j] + (0.5 - rnd.random()) * 0.2 * dy
-            z[i,j,k] = Z[k] + (0.5 - rnd.random()) * 0.2 * dz
+            x[i,j,k] = X[i] + (0.5 - rnd.random()) * 0.1 * dx 
+            y[i,j,k] = Y[j] + (0.5 - rnd.random()) * 0.1 * dy
+            z[i,j,k] = Z[k] + (0.5 - rnd.random()) * 0.1 * dz
 
 # Variables
 pressure = np.random.rand(ncells).reshape( (nx, ny, nz))

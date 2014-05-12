@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010-2012 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010-2014 Paulo A. Herrera. All rights reserved.                           * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -27,23 +27,17 @@
 # module. It is only useful for development.
 
 from distutils.core import setup
-from distutils.extension import Extension
-from Cython.Distutils import build_ext
 import numpy as np
-
-ext = Extension('evtk.cevtk', ['src/cevtk.pyx'], include_dirs = [np.get_include()])
 
 setup(
     name = 'evtk',
-    version = '0.3.0',
-    description = 'Export data as VTK binary files',
+    version = '1.0.0',
+    description = 'Export data as binary VTK files',
     author = 'Paulo Herrera',
     author_email = 'pauloa.herrera@gmail.com',
     url = '',
-    cmdclass = {'build_ext': build_ext},
-    packages = ['evtk', 'evtk.examples'],
+    packages = ['evtk'],
     package_dir = {'evtk' : 'src'},
-    ext_modules = [ext],
     package_data = {'evtk' :  ['LICENSE']}
 )
 

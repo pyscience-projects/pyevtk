@@ -6,11 +6,11 @@ visualization and data analysis with any of the visualization packages that
 support VTK files, e.g.  Paraview, VisIt and Mayavi. EVTK does not depend on any
 external library (e.g. VTK), so it is easy to install in different systems.
 
-The package is composed of a set of Python files and a small C/Cython library
-that provides performance critical routines. EVTK provides low and high level
-interfaces.  While the low level interface can be used to export data that is
-stored in any type of container, the high level functions make easy to export
-data stored in Numpy arrays.
+Since version 0.9 the package is composed only of a set of pure Python files, hence
+it is straightforwrd to install and run in any system where Python is installed.
+EVTK provides low and high level interfaces.  While the low level interface 
+can be used to export data that is stored in any type of container, the high 
+level functions make easy to export data stored in Numpy arrays.
 
 INSTALLATION:
 =============
@@ -45,19 +45,22 @@ used to export results from particle and meshless numerical simulations.
 
 4. Performance. The aim of the package is to be used as a part of
 post-processing tools. Thus, good performance is important to handle the results
-of large simulations.  To achieve this goal, performance critical routines are
-implemented as part of a small C extension.
+of large simulations.  However, latest versions give priority to ease of installation
+and use over performance.
 
 REQUIREMENTS:
 =============
 
-    - Numpy. Tested with Numpy 1.5.0. 
-    - Cython 0.12. Cython is only required to update the  included C file but
-      not to compile the package.
+    - Numpy. Tested with Numpy 1.8.0. 
 
 The package has been tested on:
     - MacOSX 10.6 x86-64.
     - Ubuntu 10.04 x86-64 guest running on VMWare Fusion.
+    - Ubuntu 12.04 x86-64 running Python Anaconda (3.4.3)
+    - Windows 7 x86-64 running Python Anaconda (3.4.3)
+
+It is compatible with both Python 2.7 and Python 3.3. Since version 0.9 it is only compatible
+with VTK 6.0 and newer versions.
 
 DEVELOPER NOTES:
 ================
