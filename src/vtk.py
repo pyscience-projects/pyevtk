@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010 - 2012 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2014 Paulo A. Herrera. All rights reserved.                    * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -28,7 +28,7 @@
 # *  export data to binary VTK file.   *
 # **************************************
 
-from cevtk import writeBlockSize, writeBlockSize64Bit, writeArrayToFile, writeArraysToFile
+from evtk import writeBlockSize, writeArrayToFile, writeArraysToFile
 from xml import XmlWriter
 import sys
 import os
@@ -189,15 +189,15 @@ class VtkFile:
         self.xml = XmlWriter(self.filename)
         self.offset = 0  # offset in bytes after beginning of binary section
         self.appendedDataIsOpen = False
-        self.largeFile = largeFile
+#        self.largeFile = largeFile
 
-        if largeFile == False:
-            self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
-                                                          version = "0.1",
-                                                          byte_order = _get_byte_order())
-        else:
-            print "WARNING: output file only compatible with VTK 6.0 and later."
-            self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
+#       if largeFile == False:
+#            self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
+#                                                          version = "0.1",
+#                                                          byte_order = _get_byte_order())
+#        else:
+#           print "WARNING: output file only compatible with VTK 6.0 and later."
+        self.xml.openElement("VTKFile").addAttributes(type = ftype.name,
                                                           version = "1.0",
                                                           byte_order = _get_byte_order(),
                                                           header_type = "UInt64")
@@ -360,10 +360,10 @@ class VtkFile:
         self.xml.closeElement()
 
         #TODO: Check if 4/8 is platform independent
-        if self.largeFile == False:
-            self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
-        else:
-            self.offset += nelem * ncomp * dtype.size + 8 # add 8 to indicate array size
+        #if self.largeFile == False:
+        #    self.offset += nelem * ncomp * dtype.size + 4 # add 4 to indicate array size
+        #else:
+        self.offset += nelem * ncomp * dtype.size + 8 # add 8 to indicate array size
         return self
 
     def addData(self, name, data):
@@ -428,10 +428,10 @@ class VtkFile:
             dsize = data[0].dtype.itemsize
             nelem = data[0].size
             block_size = ncomp * nelem * dsize
-            if self.largeFile == False:
-                writeBlockSize(self.xml.stream, block_size)
-            else:
-                writeBlockSize64Bit(self.xml.stream, block_size)
+            #if self.largeFile == False:
+            writeBlockSize(self.xml.stream, block_size)
+            #else:
+            #    writeBlockSize64Bit(self.xml.stream, block_size)
             x, y, z = data[0], data[1], data[2]
             writeArraysToFile(self.xml.stream, x, y, z)
             
@@ -440,10 +440,10 @@ class VtkFile:
             dsize = data.dtype.itemsize
             nelem = data.size
             block_size = ncomp * nelem * dsize
-            if self.largeFile == False:
-                writeBlockSize(self.xml.stream, block_size)
-            else:
-                writeBlockSize64Bit(self.xml.stream, block_size)
+            #if self.largeFile == False:
+            writeBlockSize(self.xml.stream, block_size)
+            #else:
+            #    writeBlockSize64Bit(self.xml.stream, block_size)
             writeArrayToFile(self.xml.stream, data)
          
         else:

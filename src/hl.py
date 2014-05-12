@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010 - 2012 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2014 Paulo A. Herrera. All rights reserved.                    * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -36,8 +36,8 @@ import numpy as np
 # =================================
 def _addDataToFile(vtkFile, cellData, pointData):
     # Point data
-    if pointData <> None:
-        keys = pointData.keys()
+    if pointData != None:
+        keys = list(pointData.keys())
         vtkFile.openData("Point", scalars = keys[0])
         for key in keys:
             data = pointData[key]
@@ -45,8 +45,8 @@ def _addDataToFile(vtkFile, cellData, pointData):
         vtkFile.closeData("Point")
 
     # Cell data
-    if cellData <> None:
-        keys = cellData.keys()
+    if cellData != None:
+        keys = list(cellData.keys())
         vtkFile.openData("Cell", scalars = keys[0])
         for key in keys:
             data = cellData[key]
@@ -55,70 +55,17 @@ def _addDataToFile(vtkFile, cellData, pointData):
 
 def _appendDataToFile(vtkFile, cellData, pointData):
     # Append data to binary section
-    if pointData <> None:
-        keys = pointData.keys()
+    if pointData != None:
+        keys = list(pointData.keys())
         for key in keys:
             data = pointData[key]
             vtkFile.appendData(data)
 
-    if cellData <> None:
-        keys = cellData.keys()
+    if cellData != None:
+        keys = list(cellData.keys())
         for key in keys:
             data = cellData[key]
             vtkFile.appendData(data)
-
-def _requiresLargeVTKFileSize(vtkFileType, numPoints, numCells, pointData, cellData):
-    """
-        If the block size will be close to or larger than what a uint32 can hold we
-        need to use VTK's large file ability. note that this is only
-        available in VTK 6.0 and greater.
-        Contributed by Andy Bauer.
-
-        PARAMETERS:
-            vtkFileType: name of the type of grid. If it is
-                         "VtkUnstructuredGrid" or VtkStructuredGrid"
-                         then it will add extra space needed
-                         for storing points. If it is "VtkUnstructuredGrid" it wil
-                         also add extra space for cell connectivities.
-            numPoints: the number of points in the data set. It is only used
-                       if vtkFileType is "VtkUnstructuredGrid" or VtkStructuredGrid".
-            numCells: the number of cells in the data set. It is only used
-                      if vtkFileType is "VtkUnstructuredGrid".
-            cellData: dictionary containing arrays with cell centered data.
-                      Keys should be the names of the data arrays.
-                      Arrays must have the same dimensions in all directions and must contain
-                      only scalar data.
-            pointData: dictionary containing arrays with node centered data.
-                       Keys should be the names of the data arrays.
-                       Arrays must have same dimension in each direction and
-                       they should be equal to the dimensions of the cell data plus one and
-                       must contain only scalar data.
-
-        RETURNS:
-            True if the large file format should be used.
-
-    """
-    sum = 0
-    if pointData <> None:
-        keys = pointData.keys()
-        for key in keys:
-            data = pointData[key]
-            sum = sum + data.size*data.dtype.itemsize
-
-    if cellData <> None:
-        keys = cellData.keys()
-        for key in keys:
-            data = cellData[key]
-            sum = sum + data.size*data.dtype.itemsize
-
-
-    if vtkFileType == "VtkUnstructuredGrid":
-        sum = sum + numPoints*3*8 + numCells*8*8
-    elif vtkFileType == "VtkStructuredGrid":
-        sum = sum + numPoints*3*8
-
-    # leave a little wiggle room instead of using 4294967295
-    return sum > 4000000000
 
 # =================================
 #       High level functions      
@@ -145,25 +92,23 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
 
         NOTE: At least, cellData or pointData must be present to infer the dimensions of the image.
     """
-    assert (cellData <> None or pointData <> None)
+    assert (cellData != None or pointData != None)
     
     # Extract dimensions
     start = (0,0,0)
     end = None
-    if cellData <> None:
-        keys = cellData.keys()
+    if cellData != None:
+        keys = list(cellData.keys())
         data = cellData[keys[0]]
         end = data.shape
-    elif pointData <> None:
-        keys = pointData.keys()
+    elif pointData != None:
+        keys = list(pointData.keys())
         data = pointData[keys[0]]
         end = data.shape
         end = (end[0] - 1, end[1] - 1, end[2] - 1)
 
-    largeFileFlag = _requiresLargeVTKFileSize("VtkImageData", numPoints = 0, numCells = 0, pointData = pointData, cellData = cellData)
-
     # Write data to file
-    w = VtkFile(path, VtkImageData, largeFileFlag)
+    w = VtkFile(path, VtkImageData)
     w.openGrid(start = start, end = end, origin = origin, spacing = spacing)
     w.openPiece(start = start, end = end)
     _addDataToFile(w, cellData, pointData)
@@ -208,19 +153,17 @@ def gridToVTK(path, x, y, z, cellData = None, pointData = None):
         nx, ny, nz = x.size - 1, y.size - 1, z.size - 1
         isRect = True
         ftype = VtkRectilinearGrid
-        largeFileFlag = _requiresLargeVTKFileSize("VtkRectilinearGrid", 0, 0, pointData, cellData)
     elif (x.ndim == 3 and y.ndim == 3 and z.ndim == 3):
         s = x.shape
         nx, ny, nz = s[0] - 1, s[1] - 1, s[2] - 1
         isRect = False
         ftype = VtkStructuredGrid
-        largeFileFlag = _requiresLargeVTKFileSize("VtkStructuredGrid", numPoints = x.size, numCells = 0, pointData = pointData, cellData = cellData)
     else:
         assert(False)
     end = (nx, ny, nz)
 
 
-    w =  VtkFile(path, ftype, largeFileFlag)
+    w =  VtkFile(path, ftype)
     w.openGrid(start = start, end = end)
     w.openPiece(start = start, end = end)
 
@@ -275,9 +218,7 @@ def pointsToVTK(path, x, y, z, data):
    
     cell_types[:] = VtkVertex.tid
 
-    largeFileFlag = _requiresLargeVTKFileSize("VtkUnstructuredGrid", numPoints = npoints, numCells = npoints, pointData = data, cellData = None)
-
-    w = VtkFile(path, VtkUnstructuredGrid, largeFileFlag)
+    w = VtkFile(path, VtkUnstructuredGrid)
     w.openGrid()
     w.openPiece(ncells = npoints, npoints = npoints)
     
