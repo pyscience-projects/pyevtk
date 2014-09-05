@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010-2014 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010-2014 Paulo A. Herrera. All rights reserved.                           *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -27,17 +27,20 @@
 # module. It is only useful for development.
 
 from distutils.core import setup
-import numpy as np
 
 setup(
-    name = 'evtk',
+    name = 'PyEVTK',
     version = '1.0.0',
-    description = 'Export data as binary VTK files',
     author = 'Paulo Herrera',
     author_email = 'pauloa.herrera@gmail.com',
-    url = '',
-    packages = ['evtk'],
-    package_dir = {'evtk' : 'src'},
-    package_data = {'evtk' :  ['LICENSE']}
+    maintainer = 'Adamos Kyriakou',
+    maintainer_email = 'somada141@gmail.com',
+    packages = ['pyevtk'],
+    package_dir = {'pyevtk' : 'pyevtk'},
+    url = 'https://pypi.python.org/pypi/PyEVTK',
+    description = 'Export data as binary VTK files',
+    long_description=open('README.txt').read(),
+    install_requires=[
+        "numpy >= 1.8.0",
+    ],
 )
-
