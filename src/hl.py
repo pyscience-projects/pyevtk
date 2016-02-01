@@ -242,4 +242,90 @@ def pointsToVTK(path, x, y, z, data):
 
     w.save()
     return w.getFileName()
+    
+# ==============================================================================
+def cylindricalToVTK(path, x, y, z, sh, cellData):
+    """
+        Export points and associated data as an unstructured grid.
+        
+        A cylindrical mesh connectivity is assumed. That is, the mesh is a 
+        function
+        
+        f: D --> R^3
+        (x,y,z)=f(i,j,k)
+        
+        where D is the cartesian product of graphs between a cycle (C_j)
+        and two path graphs (P_i and P_k).
+        
+        D= P_i x C_j x P_k
+        
+        for further explanation see:
+        https://en.wikipedia.org/wiki/Cartesian_product_of_graphs
+        https://en.wikipedia.org/wiki/Path_graph
+        https://en.wikipedia.org/wiki/Cycle_graph
+        
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: 1D arrays with coordinates of the points.
+            sh: number of cells in each direction
+            cellData: dictionary with variables associated to each cell.
+                  Keys should be the names of the variable stored in each array.
+                  All arrays must have the same number of elements.
+
+        RETURNS:
+            Full path to saved file.
+
+    """
+    assert(x.size==y.size==z.size)
+    s=sh+(1,0,1)
+    npoints = np.prod(s)
+    ncells = np.prod(sh)
+    
+    
+    assert(npoints==x.size)
+    
+    # create some temporary arrays to write grid topology
+    offsets = np.arange(start = 8, stop = 8*(ncells + 1), step=8, dtype = 'int32')   # index of last node in each cell
+    cell_types = np.empty(ncells, dtype = 'uint8') 
+    cell_types[:] = VtkHexahedron.tid
+    
+    # create connectivity
+    connectivity = np.empty(8*ncells, dtype = 'int32') 
+    i=0
+	
+    for zeta in range(0,sh[2]):
+		for tita in range(0,sh[1]):
+			for r in range(0,sh[0]):
+				for d in ((0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)):
+					connectivity[i]=r+d[0]+s[0]*((tita+d[1])%s[1])+s[0]*s[1]*(zeta+d[2])
+					i+=1
+
+    w = VtkFile(path, VtkUnstructuredGrid)
+    w.openGrid()
+    w.openPiece(ncells = ncells, npoints = npoints)
+    
+    w.openElement("Points")
+    w.addData("points", (x,y,z))
+    w.closeElement("Points")
+    w.openElement("Cells")
+    w.addData("connectivity", connectivity)
+    w.addData("offsets", offsets)
+    w.addData("types", cell_types)
+    w.closeElement("Cells")
+    
+    # adaptar cellData segun formato!!! 
+    
+    _addDataToFile(w, cellData = cellData, pointData = None)
+
+    w.closePiece()
+    w.closeGrid()
+    w.appendData( (x,y,z) )
+    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
+
+    _appendDataToFile(w, cellData = cellData, pointData = None)
+
+    w.save()
+    return w.getFileName()
+
 
