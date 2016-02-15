@@ -38,6 +38,6 @@ setup(
     url = '',
     packages = ['evtk'],
     package_dir = {'evtk' : 'src'},
-    package_data = {'evtk' :  ['LICENSE']}
+    package_data = {'evtk' :  ['LICENSE', 'examples/*.py']}
 )
 

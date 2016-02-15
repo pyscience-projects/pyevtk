@@ -79,7 +79,7 @@ def writeArraysToFile(stream, x, y, z):
     if (x.flags['C_CONTIGUOUS']):  
         xx = np.asfortranarray(x.T).ravel()
     else:
-	xx = x.ravel()
+        xx = x.ravel()
 
     if (y.flags['C_CONTIGUOUS']):
         yy = np.asfortranarray(y.T).ravel()

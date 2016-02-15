@@ -293,13 +293,13 @@ def cylindricalToVTK(path, x, y, z, sh, cellData):
     # create connectivity
     connectivity = np.empty(8*ncells, dtype = 'int32') 
     i=0
-	
+
     for zeta in range(0,sh[2]):
-		for tita in range(0,sh[1]):
-			for r in range(0,sh[0]):
-				for d in ((0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)):
-					connectivity[i]=r+d[0]+s[0]*((tita+d[1])%s[1])+s[0]*s[1]*(zeta+d[2])
-					i+=1
+        for tita in range(0,sh[1]):
+            for r in range(0,sh[0]):
+                for d in ((0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)):
+                    connectivity[i]=r+d[0]+s[0]*((tita+d[1])%s[1])+s[0]*s[1]*(zeta+d[2])
+                    i+=1
 
     w = VtkFile(path, VtkUnstructuredGrid)
     w.openGrid()
