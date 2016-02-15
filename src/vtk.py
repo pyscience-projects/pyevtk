@@ -28,8 +28,8 @@
 # *  export data to binary VTK file.   *
 # **************************************
 
-from evtk import writeBlockSize, writeArrayToFile, writeArraysToFile
-from xml import XmlWriter
+from evtk.evtk import writeBlockSize, writeArrayToFile, writeArraysToFile
+from evtk.xml import XmlWriter
 import sys
 import os
 
