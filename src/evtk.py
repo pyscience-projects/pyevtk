@@ -75,20 +75,11 @@ def writeArraysToFile(stream, x, y, z):
     itemsize = x.dtype.itemsize
 
     fmt = _get_byte_order_char() + str(1) + np_to_struct[x.dtype.name]  # > for big endian
-    if (x.flags['C_CONTIGUOUS']):  
-        xx = np.asfortranarray(x.T).ravel()
-    else:
-        xx = x.ravel()
-
-    if (y.flags['C_CONTIGUOUS']):
-        yy = np.asfortranarray(y.T).ravel()
-    else:
-        yy = y.ravel()
-
-    if (z.flags['C_CONTIGUOUS']):
-        zz = np.asfortranarray(z.T).ravel()
-    else:
-        zz = z.ravel()    
+    # NOTE: VTK expects data in FORTRAN order
+    # This is only needed when a multidimensional array has C-layout
+    xx = np.ravel(x, order='F')
+    yy = np.ravel(y, order='F')
+    zz = np.ravel(z, order='F')    
         
     # eliminate this loop by creating a composed array.
     for i in range(nitems):
