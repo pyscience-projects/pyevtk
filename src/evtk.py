@@ -59,10 +59,9 @@ def writeArrayToFile(stream, data):
     fmt = _get_byte_order_char() + str(data.size) + np_to_struct[data.dtype.name]  # > for big endian
 
     # NOTE: VTK expects data in FORTRAN order
-    if data.flags['C_CONTIGUOUS']: #this is only relevant for multidimensional arrays
-        dd = np.asfortranarray(data.T).ravel()
-    else:
-        dd = data.ravel()
+    # This is only needed when a multidimensional array has C-layout
+    dd = np.ravel(data, order='F')
+
     bin = struct.pack(fmt, *dd)
     stream.write(bin)
     
