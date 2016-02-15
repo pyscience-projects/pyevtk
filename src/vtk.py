@@ -125,7 +125,7 @@ def _mix_extents(start, end):
     return string
 
 def _array_to_string(a):
-    s = "".join([`num` + " " for num in a])
+    s = "".join([repr(num) + " " for num in a])
     return s
 
 def _get_byte_order():
