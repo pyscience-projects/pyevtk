@@ -28,7 +28,7 @@
 # *  export data to binary VTK file.   *
 # **************************************
 
-from evtk.vtk import * # VtkFile, VtkUnstructuredGrid, etc.
+from .vtk import * # VtkFile, VtkUnstructuredGrid, etc.
 import numpy as np
 
 # =================================
