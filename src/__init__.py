@@ -1,5 +1,5 @@
 # *************************************************************************
-# * Copyright 2010 Paulo Herrera                                          *
+# * Copyright 2010 - 2016 Paulo Herrera                                   *
 # *                                                                       *
 # * This file is part of EVTK.                                            *
 # *                                                                       *
