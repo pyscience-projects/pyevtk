@@ -242,6 +242,130 @@ def pointsToVTK(path, x, y, z, data):
 
     w.save()
     return w.getFileName()
+
+# ==============================================================================
+def linesToVTK(path, x, y, z, cellData = None, pointData = None):
+    """
+        Export line segments that joint 2 points and associated data.
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: 1D arrays with coordinates of the vertex of the lines. It is assumed that each line.
+                     is defined by two points, then the lenght of the arrays should be equal to 2 * number of lines.
+            cellData: dictionary with variables associated to each line.
+                  Keys should be the names of the variable stored in each array.
+                  All arrays must have the same number of elements.         
+            pointData: dictionary with variables associated to each vertex.
+                  Keys should be the names of the variable stored in each array.
+                  All arrays must have the same number of elements.
+
+        RETURNS:
+            Full path to saved file.
+
+    """
+    assert (x.size == y.size == z.size)
+    assert (x.size % 2 == 0)
+    npoints = x.size
+    ncells = x.size / 2
+    
+    # Check cellData has the same size that the number of cells
+    
+    # create some temporary arrays to write grid topology
+    offsets = np.arange(start = 2, step = 2, stop = npoints + 1, dtype = 'int32')   # index of last node in each cell
+    connectivity = np.arange(npoints, dtype = 'int32')                              # each point is only connected to itself
+    cell_types = np.empty(npoints, dtype = 'uint8') 
+   
+    cell_types[:] = VtkLine.tid
+
+    w = VtkFile(path, VtkUnstructuredGrid)
+    w.openGrid()
+    w.openPiece(ncells = ncells, npoints = npoints)
+    
+    w.openElement("Points")
+    w.addData("points", (x,y,z))
+    w.closeElement("Points")
+    w.openElement("Cells")
+    w.addData("connectivity", connectivity)
+    w.addData("offsets", offsets)
+    w.addData("types", cell_types)
+    w.closeElement("Cells")
+    
+    _addDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.closePiece()
+    w.closeGrid()
+    w.appendData( (x,y,z) )
+    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
+
+    _appendDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.save()
+    return w.getFileName()
+
+# ==============================================================================
+def polyLinesToVTK(path, x, y, z, pointsPerLine, cellData = None, pointData = None):
+    """
+        Export line segments that joint 2 points and associated data.
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: 1D arrays with coordinates of the vertices of the lines. It is assumed that each line.
+                     has diffent number of points.
+            pointsPerLine: 1D array that defines the number of points associated to each line. Thus, 
+                           the length of this array define the number of lines. It also implicitly 
+                           defines the connectivity or topology of the set of lines. It is assumed 
+                           that points that define a line are consecutive in the x, y and z arrays.
+            cellData: Dictionary with variables associated to each line.
+                      Keys should be the names of the variable stored in each array.
+                      All arrays must have the same number of elements.         
+            pointData: Dictionary with variables associated to each vertex.
+                       Keys should be the names of the variable stored in each array.
+                       All arrays must have the same number of elements.
+
+        RETURNS:
+            Full path to saved file.
+
+    """
+    assert (x.size == y.size == z.size)
+    npoints = x.size
+    ncells = pointsPerLine.size
+    
+    # create some temporary arrays to write grid topology
+    offsets = np.zeros(ncells, dtype = 'int32')         # index of last node in each cell
+    ii = 0
+    for i in range(ncells):
+        ii += pointsPerLine[i]
+        offsets[i] = ii
+    
+    connectivity = np.arange(npoints, dtype = 'int32')      # each line connects points that are consecutive
+   
+    cell_types = np.empty(npoints, dtype = 'uint8') 
+    cell_types[:] = VtkPolyLine.tid
+
+    w = VtkFile(path, VtkUnstructuredGrid)
+    w.openGrid()
+    w.openPiece(ncells = ncells, npoints = npoints)
+    
+    w.openElement("Points")
+    w.addData("points", (x,y,z))
+    w.closeElement("Points")
+    w.openElement("Cells")
+    w.addData("connectivity", connectivity)
+    w.addData("offsets", offsets)
+    w.addData("types", cell_types)
+    w.closeElement("Cells")
+    
+    _addDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.closePiece()
+    w.closeGrid()
+    w.appendData( (x,y,z) )
+    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
+
+    _appendDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.save()
+    return w.getFileName()
     
 # ==============================================================================
 def cylindricalToVTK(path, x, y, z, sh, cellData):
