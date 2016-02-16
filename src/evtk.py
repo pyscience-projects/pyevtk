@@ -58,6 +58,9 @@ def writeArrayToFile(stream, data):
     assert (data.ndim == 1 or data.ndim == 3)
     fmt = _get_byte_order_char() + str(data.size) + np_to_struct[data.dtype.name]  # > for big endian
 
+    # Check if array is contiguous
+    assert (data.flags['C_CONTIGUOUS'] or data.flags['F_CONTIGUOUS'])
+    
     # NOTE: VTK expects data in FORTRAN order
     # This is only needed when a multidimensional array has C-layout
     dd = np.ravel(data, order='F')
@@ -75,6 +78,13 @@ def writeArraysToFile(stream, x, y, z):
     itemsize = x.dtype.itemsize
 
     fmt = _get_byte_order_char() + str(1) + np_to_struct[x.dtype.name]  # > for big endian
+    
+    # Check if arrays are contiguous
+    assert (x.flags['C_CONTIGUOUS'] or x.flags['F_CONTIGUOUS'])
+    assert (y.flags['C_CONTIGUOUS'] or y.flags['F_CONTIGUOUS'])
+    assert (z.flags['C_CONTIGUOUS'] or z.flags['F_CONTIGUOUS'])
+    
+    
     # NOTE: VTK expects data in FORTRAN order
     # This is only needed when a multidimensional array has C-layout
     xx = np.ravel(x, order='F')
