@@ -79,3 +79,8 @@ To test the package one can run some of the examples, e.g.:
 ./tmp/lib/python2.6/site-packages/examples/points.py
 
 That should create a points.vtu file in the current directory.
+
+SUPPORT:
+=======
+
+I will continue releasing this package as open source, so it is free to be used in any kind of project. I will also continue providing support for simple questions and making incremental improvements as time allows. However, I also  provide contract based support for commercial or research projects interested in this package or in topics related to data analysis and scientific programming with Python, Java, MATLAB/Octave, C/C++ or Fortran. For further details, please contact me to: paulo.herrera.eirl@gmail.com.
