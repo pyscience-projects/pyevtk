@@ -366,6 +366,64 @@ def polyLinesToVTK(path, x, y, z, pointsPerLine, cellData = None, pointData = No
 
     w.save()
     return w.getFileName()
+
+# ==============================================================================
+def unstructuredGridToVTK(path, x, y, z, connectivity, offsets, cell_types, cellData = None, pointData = None):
+    """
+        Export unstructured grid and associated data.
+
+        PARAMETERS:
+            path: name of the file without extension where data should be saved.
+            x, y, z: 1D arrays with coordinates of the vertices of cells. It is assumed that each element
+                     has diffent number of vertices.
+            connectivity: 1D array that defines the vertices associated to each element. 
+                          Together with offset define the connectivity or topology of the grid. 
+                          It is assumed that vertices in an element are listed consecutively.
+            offsets: 1D array with the index of the last vertex of each element in the connectivity array.
+                     It should have length nelem, where nelem is the number of cells or elements in the grid.
+            cell_types: 1D array with an integer that defines the cell type of each element in the grid.
+                        It should have size nelem. This should be assigned from evtk.vtk.VtkXXXX.tid, where XXXX represent
+                        the type of cell. Please check the VTK file format specification for allowed cell types.                       
+            cellData: Dictionary with variables associated to each line.
+                      Keys should be the names of the variable stored in each array.
+                      All arrays must have the same number of elements.        
+            pointData: Dictionary with variables associated to each vertex.
+                       Keys should be the names of the variable stored in each array.
+                       All arrays must have the same number of elements.
+
+        RETURNS:
+            Full path to saved file.
+
+    """
+    assert (x.size == y.size == z.size)
+    npoints = x.size
+    ncells = cell_types.size
+    assert (offsets.size == ncells)
+    
+    w = VtkFile(path, VtkUnstructuredGrid)
+    w.openGrid()
+    w.openPiece(ncells = ncells, npoints = npoints)
+    
+    w.openElement("Points")
+    w.addData("points", (x,y,z))
+    w.closeElement("Points")
+    w.openElement("Cells")
+    w.addData("connectivity", connectivity)
+    w.addData("offsets", offsets)
+    w.addData("types", cell_types)
+    w.closeElement("Cells")
+    
+    _addDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.closePiece()
+    w.closeGrid()
+    w.appendData( (x,y,z) )
+    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
+
+    _appendDataToFile(w, cellData = cellData, pointData = pointData)
+
+    w.save()
+    return w.getFileName()
     
 # ==============================================================================
 def cylindricalToVTK(path, x, y, z, sh, cellData):
