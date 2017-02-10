@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010-2014 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010-2017 Paulo A. Herrera. All rights reserved.                           * 
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -23,19 +23,25 @@
 # * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                    *
 # ***********************************************************************************
 
-# This script must be used to re-generate the C file and compile the extension
-# module. It is only useful for development.
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
 
-from distutils.core import setup
 import numpy as np
+
+def readme(fname):
+    with open(fname, 'r') as f:
+        return f.read()
 
 setup(
     name = 'evtk',
     version = '1.0.0',
     description = 'Export data as binary VTK files',
+    long_description = readme('README.txt'),
     author = 'Paulo Herrera',
     author_email = 'pauloa.herrera@gmail.com',
-    url = '',
+    url = 'https://bitbucket.org/pauloh/pyevtk',
     packages = ['evtk'],
     package_dir = {'evtk' : 'src'},
     package_data = {'evtk' :  ['LICENSE', 'examples/*.py']}
