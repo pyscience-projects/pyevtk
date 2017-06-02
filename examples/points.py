@@ -29,7 +29,7 @@
 # * Example of how to use the high level pointsToVTK function. *
 # **************************************************************
 
-from evtk.hl import pointsToVTK
+from pyevtk.hl import pointsToVTK
 import numpy as np
 
 # Example 1
