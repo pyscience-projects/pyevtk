@@ -29,7 +29,7 @@
 # * Example of how to use the low level VtkFile class.         *
 # **************************************************************
 
-from evtk.vtk import VtkFile, VtkRectilinearGrid
+from pyevtk.vtk import VtkFile, VtkRectilinearGrid
 import numpy as np
 
 nx, ny, nz = 6, 6, 2

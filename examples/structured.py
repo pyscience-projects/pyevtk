@@ -30,7 +30,7 @@
 # * This example shows how to export a structured grid.        *
 # **************************************************************
 
-from evtk.hl import gridToVTK
+from pyevtk.hl import gridToVTK
 import numpy as np
 import random as rnd
 

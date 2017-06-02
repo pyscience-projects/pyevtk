@@ -29,7 +29,7 @@
 # * Example of how to use the high level imageToVTK function.  *
 # **************************************************************
 
-from evtk.hl import imageToVTK
+from pyevtk.hl import imageToVTK
 import numpy as np
 
 # Dimensions
