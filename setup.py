@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010-2017 Paulo A. Herrera. All rights reserved.                           * 
+# * Copyright 2010-2017 Paulo A. Herrera. All rights reserved.                           *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -28,22 +28,27 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import numpy as np
 
 def readme(fname):
     with open(fname, 'r') as f:
         return f.read()
 
-setup(
-    name = 'evtk',
-    version = '1.0.1',
-    description = 'Export data as binary VTK files',
-    long_description = readme('README.txt'),
-    author = 'Paulo Herrera',
-    author_email = 'pauloa.herrera@gmail.com',
-    url = 'https://bitbucket.org/pauloh/pyevtk',
-    packages = ['evtk'],
-    package_dir = {'evtk' : 'src'},
-    package_data = {'evtk' :  ['LICENSE', 'examples/*.py']}
-)
 
+setup(
+    name='evtk',
+    version='1.0.1',
+    description='Export data as binary VTK files',
+    long_description=readme('README.txt'),
+    author='Paulo Herrera',
+    author_email='pauloa.herrera@gmail.com',
+    maintainer='Adamos Kyriakou',
+    maintainer_email='somada141@gmail.com',
+    url='https://bitbucket.org/pauloh/pyevtk',
+    packages=['pyevtk'],
+    package_dir={'pyevtk': 'pyevtk'},
+    package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
+    install_requires=[
+        "numpy >= 1.8.0",
+    ],
+
+)

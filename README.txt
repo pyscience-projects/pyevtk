@@ -11,7 +11,7 @@ My fork is hosted under:
 
 https://bitbucket.org/somada141/pyevtk
 
-and while PyPI lists me as the author, despite my listing myself as the maintainer in the setup.py file, I'm merely the maintainer.
+and while PyPI lists me as the author, despite my listing myself as the maintainer in the `setup.py` file, I'm merely the maintainer.
 
 INTRODUCTION:
 =============
@@ -69,7 +69,7 @@ and use over performance.
 REQUIREMENTS:
 =============
 
-    - Numpy. Tested with Numpy 1.8.0.
+    - Numpy. Tested with Numpy 1.11.3.
 
 The package has been tested on:
     - MacOSX 10.6 x86-64.
