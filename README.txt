@@ -1,3 +1,18 @@
+PREAMBLE:
+=========
+
+This package in its entirety belongs to Paulo Herrera and its currently hosted under:
+
+https://bitbucket.org/pauloh/pyevtk
+
+I've misappropriated, well forked and repackaged really, this package in order to host it on PyPI and allow for its easy distribution and installation as I use it a lot. I take no credit whatsoever for it.
+
+My fork is hosted under:
+
+https://bitbucket.org/somada141/pyevtk
+
+and while PyPI lists me as the author, despite my listing myself as the maintainer in the setup.py file, I'm merely the maintainer.
+
 INTRODUCTION:
 =============
 
@@ -8,15 +23,18 @@ external library (e.g. VTK), so it is easy to install in different systems.
 
 Since version 0.9 the package is composed only of a set of pure Python files, hence
 it is straightforwrd to install and run in any system where Python is installed.
-EVTK provides low and high level interfaces.  While the low level interface 
-can be used to export data that is stored in any type of container, the high 
+EVTK provides low and high level interfaces.  While the low level interface
+can be used to export data that is stored in any type of container, the high
 level functions make easy to export data stored in Numpy arrays.
 
 INSTALLATION:
 =============
 
-Go to the source directory and type:
-python setup.py install
+This package is being hosted on PyPI under:
+
+https://pypi.python.org/pypi/PyEVTK
+
+and can be installed with pip using `pip install pyevtk`
 
 DOCUMENTATION:
 ==============
@@ -51,7 +69,7 @@ and use over performance.
 REQUIREMENTS:
 =============
 
-    - Numpy. Tested with Numpy 1.8.0. 
+    - Numpy. Tested with Numpy 1.8.0.
 
 The package has been tested on:
     - MacOSX 10.6 x86-64.
