@@ -17,3 +17,7 @@
 # * along with EVTK.  If not, see <http://www.gnu.org/licenses/>.         *
 # *************************************************************************
 
+import evtk
+import hl
+import vtk
+import xml
