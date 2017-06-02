@@ -35,7 +35,7 @@ def readme(fname):
 
 
 setup(
-    name='evtk',
+    name='pyevtk',
     version='1.0.1',
     description='Export data as binary VTK files',
     long_description=readme('README.txt'),
