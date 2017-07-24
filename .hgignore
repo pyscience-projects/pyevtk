@@ -2,3 +2,4 @@ syntax: glob
 build
 dist
 pyevtk.egg-info
+.eggs
