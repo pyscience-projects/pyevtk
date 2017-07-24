@@ -1,1 +1,18 @@
-v1.0.0, September 05 2014 -- First port of the original PyEVTK by Paulo Herrera
+=======
+History
+=======
+
+1.0.2 (2017-07-25)
+------------------
+
+* Added Python3-compatible relative imports (PR by Rene Milk).
+
+1.0.1 (2017-06-02)
+------------------
+
+* Ported over latest changes made in the original repo by Paulo Herrera.
+
+0.1.0 (2014-09-05)
+------------------
+
+* First port of the original PyEVTK by Paulo Herrera.
