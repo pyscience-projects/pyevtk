@@ -38,7 +38,7 @@ setup(
     name='pyevtk',
     version='1.0.2',
     description='Export data as binary VTK files',
-    long_description=readme('README.txt'),
+    long_description=readme('README.md'),
     author='Paulo Herrera',
     author_email='pauloa.herrera@gmail.com',
     maintainer='Adamos Kyriakou',
