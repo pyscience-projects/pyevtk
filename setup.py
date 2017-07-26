@@ -50,5 +50,7 @@ setup(
     install_requires=[
         "numpy >= 1.8.0",
     ],
+    # necessary for 'python setup.py test'
+    setup_requires=['pytest-runner'],
     tests_require=['pytest>=3.1', 'pytest-cov'],
 )
