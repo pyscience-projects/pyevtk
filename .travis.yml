@@ -12,6 +12,7 @@ install:
 
 script:
     - python setup.py test
+    - coveralls
 
 matrix:
   allow_failures:
