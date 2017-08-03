@@ -13,6 +13,8 @@ install:
 script:
     - python setup.py test
     - coveralls
+    - python setup.py bdist_wheel
+    - python setup.py sdist
 
 matrix:
   allow_failures:
