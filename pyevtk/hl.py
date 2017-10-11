@@ -32,11 +32,11 @@ from .vtk import * # VtkFile, VtkUnstructuredGrid, etc.
 import numpy as np
 
 # =================================
-#       Helper functions      
+#       Helper functions
 # =================================
 def _addDataToFile(vtkFile, cellData, pointData):
     # Point data
-    if pointData != None:
+    if pointData:
         keys = list(pointData.keys())
         vtkFile.openData("Point", scalars = keys[0])
         for key in keys:
@@ -45,7 +45,7 @@ def _addDataToFile(vtkFile, cellData, pointData):
         vtkFile.closeData("Point")
 
     # Cell data
-    if cellData != None:
+    if cellData:
         keys = list(cellData.keys())
         vtkFile.openData("Cell", scalars = keys[0])
         for key in keys:
