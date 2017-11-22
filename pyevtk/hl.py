@@ -431,5 +431,86 @@ def unstructuredGridToVTK(path, x, y, z, connectivity, offsets, cell_types, cell
 
     w.save()
     return w.getFileName()
+    
+# ==============================================================================
+def cylinderToVTK(path, x0, y0, z0, z1, radius, nlayers, npilars = 16, cellData=None, pointData=None):
+    """
+        Export cylinder as VTK unstructured grid.
+    
+      PARAMETERS:
+        path: path to file without extension.
+        x0, yo: center of cylinder.
+        z0, z1: lower and top elevation of the cylinder.
+        radius: radius of cylinder.
+        nlayers: Number of layers in z direction to divide the cylinder.
+        npilars: Number of points around the diameter of the cylinder. 
+                 Higher value gives higher resolution to represent the curved shape.
+        cellData: dictionary with 1D arrays that store cell data. 
+                  Arrays should have number of elements equal to ncells = npilars * nlayers.
+        pointData: dictionary with 1D arrays that store point data.
+                  Arrays should have number of elements equal to npoints = npilars * (nlayers + 1).
+        
+      RETURNS: 
+            Full path to saved file.
+        
+        NOTE: This function only export vertical shapes for now. However, it should be easy to 
+              rotate the cylinder to represent other orientations.
+    """
+    import math as m
+    
+    # Define x, y coordinates from polar coordinates.
+    dpi = 2.0 * m.pi / npilars
+    angles = np.arange(0.0, 2.0 * m.pi, dpi)
 
+    x = radius * np.cos(angles) + x0
+    y = radius * np.sin(angles) + y0
 
+    dz = (z1 - z0) / nlayers
+    z = np.arange(z0, z1+dz, step = dz)
+
+    npoints = npilars * (nlayers + 1)
+    ncells  = npilars * nlayers
+
+    xx = np.zeros(npoints)
+    yy = np.zeros(npoints)
+    zz = np.zeros(npoints)
+
+    ii = 0
+    for k in range(nlayers + 1):
+        for p in range(npilars):
+            xx[ii] = x[p]
+            yy[ii] = y[p]
+            zz[ii] = z[k]
+            ii = ii + 1
+
+    # Define connectivity
+    conn = np.zeros(4 * ncells, dtype = np.int64)
+    ii = 0
+    for l in range(nlayers):
+        for p in range(npilars):
+            p0 = p
+            if(p + 1 == npilars):
+                p1 = 0 
+            else: 
+                p1 = p + 1 # circular loop
+       
+            n0 = p0 + l * npilars
+            n1 = p1 + l * npilars 
+            n2 = n0 + npilars
+            n3 = n1 + npilars
+        
+            conn[ii + 0] = n0
+            conn[ii + 1] = n1
+            conn[ii + 2] = n3
+            conn[ii + 3] = n2 
+            ii = ii + 4
+ 
+    # Define offsets 
+    offsets = np.zeros(ncells, dtype = np.int64)
+    for i in range(ncells):
+        offsets[i] = (i + 1) * 4
+
+    # Define cell types
+    ctype = np.ones(ncells) + VtkPixel.tid
+    
+    return unstructuredGridToVTK(path, xx, yy, zz, connectivity = conn, offsets = offsets, cell_types = ctype, cellData = cellData, pointData = pointData)
