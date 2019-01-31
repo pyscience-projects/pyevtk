@@ -4,3 +4,4 @@ numpy
 codecov
 twine
 check-manifest
+readme_render[md]
