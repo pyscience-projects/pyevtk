@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/pyscience-projects/pyevtk/badge.svg?branch=master)](https://coveralls.io/github/pyscience-projects/pyevtk?branch=master)
+[![Coverage Status](https://codecov.io/gh/pyscience-projects/pyevtk/branch/master/graph/badge.svg)](https://codecov.io/gh/pyscience-projects/pyevtk)
 [![Build Status](https://travis-ci.org/pyscience-projects/pyevtk.png?branch=master)](https://travis-ci.org/pyscience-projects/pyevtk)
 
 PREAMBLE:
