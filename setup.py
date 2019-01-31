@@ -52,5 +52,5 @@ setup(
     ],
     # necessary for 'python setup.py test'
     setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.1', 'pytest-cov'],
+    tests_require=['pytest>=3.1', 'pytest-cov', 'twine', 'check-manifest'],
 )
