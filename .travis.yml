@@ -1,4 +1,5 @@
 language: python
+dist: xenial
 
 python:
   - "2.7"
@@ -13,6 +14,9 @@ install:
 env:
     - SDIST_DIR=/tmp/pyevtk_sdist/
 
+before_script:
+    - pip install -U pip
+
 script:
     - python setup.py test
     - codecov
@@ -21,4 +25,4 @@ script:
     - twine check ${SDIST_DIR}/*
     - check-manifest -p python ${PWD}
     - cd ${SDIST_DIR}
-    - install $(ls ${SDIST_DIR})
+    - pip install $(ls ${SDIST_DIR})
