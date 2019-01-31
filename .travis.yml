@@ -5,18 +5,19 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
-  - "3.7-dev"
+  - "3.7"
 
 install:
     - pip install -r requirements.txt
+
+env:
+    - SDIST_DIR=/tmp/pyevtk_sdist/
 
 script:
     - python setup.py test
     - coveralls
     - python setup.py bdist_wheel
-    - python setup.py sdist
-
-matrix:
-  allow_failures:
-    # currently no setuptools_scm for this, not our problem
-    - python: "3.7-dev"
+    - python setup.py sdist -d ${SDIST_DIR}/ --format=gztar
+    - twine check ${SDIST_DIR}/*
+    - check-manifest -p python ${PWD}
+    - pip install $(ls ${SDIST_DIR})
