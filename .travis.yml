@@ -20,4 +20,5 @@ script:
     - python setup.py sdist -d ${SDIST_DIR}/ --format=gztar
     - twine check ${SDIST_DIR}/*
     - check-manifest -p python ${PWD}
-    - pip install $(ls ${SDIST_DIR})
+    - cd ${SDIST_DIR}
+    - install $(ls ${SDIST_DIR})
