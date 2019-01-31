@@ -15,7 +15,7 @@ env:
 
 script:
     - python setup.py test
-    - coveralls
+    - codecov
     - python setup.py bdist_wheel
     - python setup.py sdist -d ${SDIST_DIR}/ --format=gztar
     - twine check ${SDIST_DIR}/*

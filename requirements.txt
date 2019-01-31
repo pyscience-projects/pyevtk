@@ -1,6 +1,6 @@
 pytest >= 3.1
 pytest-cov
 numpy
-python-coveralls
+codecov
 twine
 check-manifest
