@@ -39,6 +39,7 @@ setup(
     version='1.1.0',
     description='Export data as binary VTK files',
     long_description=readme('README.md'),
+    long_description_content_type='text/markdown',
     author='Paulo Herrera',
     author_email='pauloa.herrera@gmail.com',
     maintainer='Adamos Kyriakou',
