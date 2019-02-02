@@ -12,7 +12,7 @@ I've misappropriated, well forked and repackaged really, this package in order t
 
 My fork is hosted under:
 
-https://bitbucket.org/somada141/pyevtk
+https://github.com/pyscience-projects/pyevtk
 
 and while PyPI lists me as the author, despite my listing myself as the maintainer in the `setup.py` file, I'm merely the maintainer.
 
