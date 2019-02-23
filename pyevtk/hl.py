@@ -100,11 +100,17 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
     if cellData != None:
         keys = list(cellData.keys())
         data = cellData[keys[0]]
-        end = data.shape
+        if hasattr(data,'shape'):
+            end = data.shape
+        elif(data[0].ndim==3 and data[1].ndim==3 and data[2].ndim==3):
+            end = data[0].shape
     elif pointData != None:
         keys = list(pointData.keys())
         data = pointData[keys[0]]
-        end = data.shape
+        if hasattr(data,'shape'):
+            end = data.shape
+        elif(data[0].ndim==3 and data[1].ndim==3 and data[2].ndim==3):
+            end = data[0].shape
         end = (end[0] - 1, end[1] - 1, end[2] - 1)
 
     # Write data to file
