@@ -79,13 +79,14 @@ def imageToVTK(path, origin = (0.0,0.0,0.0), spacing = (1.0,1.0,1.0), cellData =
             spacing: grid spacing (default = (1,1,1))
             cellData: dictionary containing arrays with cell centered data.
                       Keys should be the names of the data arrays.
-                      Arrays must have the same dimensions in all directions and must contain 
-                      only scalar data.
+                      Arrays must have the same dimensions in all directions and can contain 
+                      scalar data [n,n,n] or vector data ([n,n,n],[n,n,n],[n,n,n]).
             nodeData: dictionary containing arrays with node centered data.
                       Keys should be the names of the data arrays.
                       Arrays must have same dimension in each direction and 
                       they should be equal to the dimensions of the cell data plus one and
-                      must contain only scalar data.
+                      can contain scalar data [n+1,n+1,n+1] or 
+					  vector data ([n+1,n+1,n+1],[n+1,n+1,n+1],[n+1,n+1,n+1]).
          
          RETURNS:
             Full path to saved file.
