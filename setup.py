@@ -44,7 +44,7 @@ setup(
     author_email='pauloa.herrera@gmail.com',
     maintainer='Adamos Kyriakou',
     maintainer_email='somada141@gmail.com',
-    url='https://bitbucket.org/pauloh/pyevtk',
+    url = 'https://github.com/paulo-herrera/PyEVTK.git',
     packages=['pyevtk'],
     package_dir={'pyevtk': 'pyevtk'},
     package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
