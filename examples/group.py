@@ -30,7 +30,7 @@
 # * dependent data.                                            *
 # **************************************************************
 
-from evtk.vtk import VtkGroup
+from pyevtk.vtk import VtkGroup
 
 g = VtkGroup("./group")
 g.addFile(filepath = "sim0000.vtu", sim_time = 0.0)
