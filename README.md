@@ -6,7 +6,7 @@ PREAMBLE:
 
 This package in its entirety belongs to Paulo Herrera and its currently hosted under:
 
-https://bitbucket.org/pauloh/pyevtk
+https://github.com/paulo-herrera/PyEVTK
 
 I've misappropriated, well forked and repackaged really, this package in order to host it on PyPI and allow for its easy distribution and installation as I use it a lot. I take no credit whatsoever for it.
 
@@ -14,7 +14,7 @@ My fork is hosted under:
 
 https://github.com/pyscience-projects/pyevtk
 
-and while PyPI lists me as the author, despite my listing myself as the maintainer in the `setup.py` file, I'm merely the maintainer.
+This package is nowadays primarily maintained by [René Fritze](https://github.com/renefritze) and [Xylar Asay-Davis](https://github.com/xylar).
 
 INTRODUCTION:
 =============
