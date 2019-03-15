@@ -45,7 +45,7 @@ setup(
     maintainer='Adamos Kyriakou',
     maintainer_email='somada141@gmail.com',
     url='https://bitbucket.org/pauloh/pyevtk',
-    packages=['pyevtk'],
+    packages=['pyevtk', 'evtk'],
     package_dir={'pyevtk': 'pyevtk'},
     package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
     install_requires=[
