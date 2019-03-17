@@ -1,5 +1,7 @@
+#! /usr/bin/env python
+
 # ***********************************************************************************
-# * Copyright 2010-2017 Paulo A. Herrera. All rights reserved.                           *
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -23,35 +25,29 @@
 # * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                    *
 # ***********************************************************************************
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+# **************************************************************
+# * Example of how to use the high level pointsToVTK function. *
+# **************************************************************
+
+from pyevtk.hl import linesToVTK
+import numpy as np
+
+# Example 1
+npoints = 4
+x = np.zeros(npoints)
+y = np.zeros(npoints)
+z = np.zeros(npoints)
+pressure = np.random.rand(npoints)
+temp = np.random.rand(npoints)
+vel = np.zeros(2)
+vel[0] = 1.0
+vel[1] = 5.0
+
+x[0], y[0], z[0] = 0.0, 0.0, 0.0
+x[1], y[1], z[1] = 1.0, 1.0, 1.0
+x[2], y[2], z[2] = 0.0, 0.0, 0.0
+x[3], y[3], z[3] = -1.0, 1.0, 1.0
+
+linesToVTK("./lines", x, y, z, cellData = {"vel" : vel}, pointData = {"temp" : temp, "pressure" : pressure})
 
 
-def readme(fname):
-    with open(fname, 'r') as f:
-        return f.read()
-
-
-setup(
-    name='pyevtk',
-    version='1.1.1',
-    description='Export data as binary VTK files',
-    long_description=readme('README.md'),
-    long_description_content_type='text/markdown',
-    author='Paulo Herrera',
-    author_email='pauloa.herrera@gmail.com',
-    maintainer='Adamos Kyriakou',
-    maintainer_email='somada141@gmail.com',
-    url = 'https://github.com/paulo-herrera/PyEVTK.git',
-    packages=['pyevtk', 'evtk'],
-    package_dir={'pyevtk': 'pyevtk'},
-    package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
-    install_requires=[
-        "numpy >= 1.8.0",
-    ],
-    # necessary for 'python setup.py test'
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.1', 'pytest-cov', 'twine', 'check-manifest'],
-)

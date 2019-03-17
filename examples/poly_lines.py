@@ -1,5 +1,7 @@
+#! /usr/bin/env python
+
 # ***********************************************************************************
-# * Copyright 2010-2017 Paulo A. Herrera. All rights reserved.                           *
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -23,35 +25,42 @@
 # * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                    *
 # ***********************************************************************************
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
+# **************************************************************
+# * Example of how to use the high level pointsToVTK function. *
+# **************************************************************
+
+from pyevtk.hl import polyLinesToVTK
+import numpy as np
+
+# Positions of points that define lines
+npoints = 7
+x = np.zeros(npoints)
+y = np.zeros(npoints)
+z = np.zeros(npoints)
+
+# First line
+x[0], y[0], z[0] = 0.0, 0.0, 0.0
+x[1], y[1], z[1] = 1.0, 1.0, 0.0
+x[2], y[2], z[2] = 2.0, 0.0, 0.0
+x[3], y[3], z[3] = 3.0, -1.0, 0.0
+
+# Second line
+x[4], y[4], z[4] = 0.0, 0.0, 3.0
+x[5], y[5], z[5] = 1.0, 1.0, 3.0
+x[6], y[6], z[6] = 2.0, 0.0, 3.0
+
+# Connectivity of the lines
+pointsPerLine = np.zeros(2)
+pointsPerLine[0] = 4
+pointsPerLine[1] = 3
+
+# Some variables
+pressure = np.random.rand(npoints)
+temp = np.random.rand(npoints)
+vel = np.zeros(6)
+vel[0:3] = 1.0
+vel[4:6] = 5.0
+
+polyLinesToVTK("./poly_lines", x, y, z, pointsPerLine = pointsPerLine, cellData = {"vel" : vel}, pointData = {"temp" : temp, "pressure" : pressure})
 
 
-def readme(fname):
-    with open(fname, 'r') as f:
-        return f.read()
-
-
-setup(
-    name='pyevtk',
-    version='1.1.1',
-    description='Export data as binary VTK files',
-    long_description=readme('README.md'),
-    long_description_content_type='text/markdown',
-    author='Paulo Herrera',
-    author_email='pauloa.herrera@gmail.com',
-    maintainer='Adamos Kyriakou',
-    maintainer_email='somada141@gmail.com',
-    url = 'https://github.com/paulo-herrera/PyEVTK.git',
-    packages=['pyevtk', 'evtk'],
-    package_dir={'pyevtk': 'pyevtk'},
-    package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
-    install_requires=[
-        "numpy >= 1.8.0",
-    ],
-    # necessary for 'python setup.py test'
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.1', 'pytest-cov', 'twine', 'check-manifest'],
-)

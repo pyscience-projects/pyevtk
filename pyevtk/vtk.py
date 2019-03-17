@@ -157,17 +157,21 @@ class VtkGroup:
         self.xml.closeElement("VTKFile")
         self.xml.close()
     
-    def addFile(self, filepath, sim_time):
+    def addFile(self, filepath, sim_time, group = "", part = "0"):
         """ Adds file to this VTK group.
 
             PARAMETERS:
                 filepath: full path to VTK file.
                 sim_time: simulated time.
+                group: This attribute is not required; it is only for informational purposes.
+                part: It is an integer value greater than or equal to 0.
+                
+            See: http://www.paraview.org/Wiki/ParaView/Data_formats#PVD_File_Format for details.
         """
         # TODO: Check what the other attributes are for.
         filename = os.path.relpath(filepath, start = self.root)
         self.xml.openElement("DataSet")
-        self.xml.addAttributes(timestep = sim_time, group = "", part = "0", file = filename)
+        self.xml.addAttributes(timestep = sim_time, group = group, part = part, file = filename)
         self.xml.closeElement()
         
 

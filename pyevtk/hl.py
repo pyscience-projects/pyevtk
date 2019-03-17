@@ -32,11 +32,11 @@ from .vtk import * # VtkFile, VtkUnstructuredGrid, etc.
 import numpy as np
 
 # =================================
-#       Helper functions      
+#       Helper functions
 # =================================
 def _addDataToFile(vtkFile, cellData, pointData):
     # Point data
-    if pointData != None:
+    if pointData:
         keys = list(pointData.keys())
         vtkFile.openData("Point", scalars = keys[0])
         for key in keys:
@@ -45,7 +45,7 @@ def _addDataToFile(vtkFile, cellData, pointData):
         vtkFile.closeData("Point")
 
     # Cell data
-    if cellData != None:
+    if cellData:
         keys = list(cellData.keys())
         vtkFile.openData("Cell", scalars = keys[0])
         for key in keys:
@@ -200,7 +200,7 @@ def gridToVTK(path, x, y, z, cellData = None, pointData = None):
 
 
 # ==============================================================================
-def pointsToVTK(path, x, y, z, data):
+def pointsToVTK(path, x, y, z, data = None):
     """
         Export points and associated data as an unstructured grid.
 
@@ -433,88 +433,84 @@ def unstructuredGridToVTK(path, x, y, z, connectivity, offsets, cell_types, cell
     return w.getFileName()
     
 # ==============================================================================
-def cylindricalToVTK(path, x, y, z, sh, cellData):
+def cylinderToVTK(path, x0, y0, z0, z1, radius, nlayers, npilars = 16, cellData=None, pointData=None):
     """
-        Export points and associated data as an unstructured grid.
+        Export cylinder as VTK unstructured grid.
+    
+      PARAMETERS:
+        path: path to file without extension.
+        x0, yo: center of cylinder.
+        z0, z1: lower and top elevation of the cylinder.
+        radius: radius of cylinder.
+        nlayers: Number of layers in z direction to divide the cylinder.
+        npilars: Number of points around the diameter of the cylinder. 
+                 Higher value gives higher resolution to represent the curved shape.
+        cellData: dictionary with 1D arrays that store cell data. 
+                  Arrays should have number of elements equal to ncells = npilars * nlayers.
+        pointData: dictionary with 1D arrays that store point data.
+                  Arrays should have number of elements equal to npoints = npilars * (nlayers + 1).
         
-        A cylindrical mesh connectivity is assumed. That is, the mesh is a 
-        function
-        
-        f: D --> R^3
-        (x,y,z)=f(i,j,k)
-        
-        where D is the cartesian product of graphs between a cycle (C_j)
-        and two path graphs (P_i and P_k).
-        
-        D= P_i x C_j x P_k
-        
-        for further explanation see:
-        https://en.wikipedia.org/wiki/Cartesian_product_of_graphs
-        https://en.wikipedia.org/wiki/Path_graph
-        https://en.wikipedia.org/wiki/Cycle_graph
-        
-
-        PARAMETERS:
-            path: name of the file without extension where data should be saved.
-            x, y, z: 1D arrays with coordinates of the points.
-            sh: number of cells in each direction
-            cellData: dictionary with variables associated to each cell.
-                  Keys should be the names of the variable stored in each array.
-                  All arrays must have the same number of elements.
-
-        RETURNS:
+      RETURNS: 
             Full path to saved file.
-
+        
+        NOTE: This function only export vertical shapes for now. However, it should be easy to 
+              rotate the cylinder to represent other orientations.
     """
-    assert(x.size==y.size==z.size)
-    s=sh+(1,0,1)
-    npoints = np.prod(s)
-    ncells = np.prod(sh)
+    import math as m
     
+    # Define x, y coordinates from polar coordinates.
+    dpi = 2.0 * m.pi / npilars
+    angles = np.arange(0.0, 2.0 * m.pi, dpi)
+
+    x = radius * np.cos(angles) + x0
+    y = radius * np.sin(angles) + y0
+
+    dz = (z1 - z0) / nlayers
+    z = np.arange(z0, z1+dz, step = dz)
+
+    npoints = npilars * (nlayers + 1)
+    ncells  = npilars * nlayers
+
+    xx = np.zeros(npoints)
+    yy = np.zeros(npoints)
+    zz = np.zeros(npoints)
+
+    ii = 0
+    for k in range(nlayers + 1):
+        for p in range(npilars):
+            xx[ii] = x[p]
+            yy[ii] = y[p]
+            zz[ii] = z[k]
+            ii = ii + 1
+
+    # Define connectivity
+    conn = np.zeros(4 * ncells, dtype = np.int64)
+    ii = 0
+    for l in range(nlayers):
+        for p in range(npilars):
+            p0 = p
+            if(p + 1 == npilars):
+                p1 = 0 
+            else: 
+                p1 = p + 1 # circular loop
+       
+            n0 = p0 + l * npilars
+            n1 = p1 + l * npilars 
+            n2 = n0 + npilars
+            n3 = n1 + npilars
+        
+            conn[ii + 0] = n0
+            conn[ii + 1] = n1
+            conn[ii + 2] = n3
+            conn[ii + 3] = n2 
+            ii = ii + 4
+ 
+    # Define offsets 
+    offsets = np.zeros(ncells, dtype = np.int64)
+    for i in range(ncells):
+        offsets[i] = (i + 1) * 4
+
+    # Define cell types
+    ctype = np.ones(ncells) + VtkPixel.tid
     
-    assert(npoints==x.size)
-    
-    # create some temporary arrays to write grid topology
-    offsets = np.arange(start = 8, stop = 8*(ncells + 1), step=8, dtype = 'int32')   # index of last node in each cell
-    cell_types = np.empty(ncells, dtype = 'uint8') 
-    cell_types[:] = VtkHexahedron.tid
-    
-    # create connectivity
-    connectivity = np.empty(8*ncells, dtype = 'int32') 
-    i=0
-
-    for zeta in range(0,sh[2]):
-        for tita in range(0,sh[1]):
-            for r in range(0,sh[0]):
-                for d in ((0,0,0),(1,0,0),(1,1,0),(0,1,0),(0,0,1),(1,0,1),(1,1,1),(0,1,1)):
-                    connectivity[i]=r+d[0]+s[0]*((tita+d[1])%s[1])+s[0]*s[1]*(zeta+d[2])
-                    i+=1
-
-    w = VtkFile(path, VtkUnstructuredGrid)
-    w.openGrid()
-    w.openPiece(ncells = ncells, npoints = npoints)
-    
-    w.openElement("Points")
-    w.addData("points", (x,y,z))
-    w.closeElement("Points")
-    w.openElement("Cells")
-    w.addData("connectivity", connectivity)
-    w.addData("offsets", offsets)
-    w.addData("types", cell_types)
-    w.closeElement("Cells")
-    
-    # adaptar cellData segun formato!!! 
-    
-    _addDataToFile(w, cellData = cellData, pointData = None)
-
-    w.closePiece()
-    w.closeGrid()
-    w.appendData( (x,y,z) )
-    w.appendData(connectivity).appendData(offsets).appendData(cell_types)
-
-    _appendDataToFile(w, cellData = cellData, pointData = None)
-
-    w.save()
-    return w.getFileName()
-
-
+    return unstructuredGridToVTK(path, xx, yy, zz, connectivity = conn, offsets = offsets, cell_types = ctype, cellData = cellData, pointData = pointData)
