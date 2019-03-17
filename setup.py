@@ -45,7 +45,7 @@ setup(
     maintainer='Adamos Kyriakou',
     maintainer_email='somada141@gmail.com',
     url = 'https://github.com/paulo-herrera/PyEVTK.git',
-    packages=['pyevtk'],
+    packages=['pyevtk', 'evtk'],
     package_dir={'pyevtk': 'pyevtk'},
     package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
     install_requires=[
