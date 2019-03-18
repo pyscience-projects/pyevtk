@@ -2,6 +2,15 @@
 History
 =======
 
+1.1.2 (2019-03-17)
+------------------
+* Brings this repo in sync with Paulo Herrera's old BitBucket and new GitHub
+* Adds some new examples and fixes some compatibility issues with != None
+* Vector image support for imagetoVTK
+* Adds more tests to CI
+* Adds "evtk" package (identical to "pyevtk") for backward compatibility with
+  depricated warning
+
 1.1.1 (2019-02-01)
 ------------------
 
