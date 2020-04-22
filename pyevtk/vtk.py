@@ -119,7 +119,7 @@ class VtkCellType:
     ----------
     tid : int
         Type ID.
-    name : TYPE
+    name : str
         Cell type name.
     """
 
