@@ -633,7 +633,7 @@ class VtkFile:
         """
         if not self.appendedDataIsOpen:
             self.xml.openElement("AppendedData").addAttributes(
-                encoding="base64"
+                encoding="raw"
             ).addText("_")
             self.appendedDataIsOpen = True
 
