@@ -30,28 +30,27 @@ except ImportError:
 
 
 def readme(fname):
-    with open(fname, 'r') as f:
+    """Open the readme file."""
+    with open(fname, "r") as f:
         return f.read()
 
 
 setup(
-    name='pyevtk',
-    version='1.1.2',
-    description='Export data as binary VTK files',
-    long_description=readme('README.md'),
-    long_description_content_type='text/markdown',
-    author='Paulo Herrera',
-    author_email='pauloa.herrera@gmail.com',
-    maintainer='Adamos Kyriakou',
-    maintainer_email='somada141@gmail.com',
-    url = 'https://github.com/paulo-herrera/PyEVTK.git',
-    packages=['pyevtk', 'evtk'],
-    package_dir={'pyevtk': 'pyevtk'},
-    package_data={'pyevtk': ['LICENSE.txt', 'examples/*.py']},
-    install_requires=[
-        "numpy >= 1.8.0",
-    ],
+    name="pyevtk",
+    version="1.1.2",
+    description="Export data as binary VTK files",
+    long_description=readme("README.md"),
+    long_description_content_type="text/markdown",
+    author="Paulo Herrera",
+    author_email="pauloa.herrera@gmail.com",
+    maintainer="Adamos Kyriakou",
+    maintainer_email="somada141@gmail.com",
+    url="https://github.com/paulo-herrera/PyEVTK.git",
+    packages=["pyevtk", "evtk"],
+    package_dir={"pyevtk": "pyevtk"},
+    package_data={"pyevtk": ["LICENSE.txt", "examples/*.py"]},
+    install_requires=["numpy >= 1.8.0"],
     # necessary for 'python setup.py test'
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest>=3.1', 'pytest-cov', 'twine', 'check-manifest'],
+    setup_requires=["pytest-runner"],
+    tests_require=["pytest>=3.1", "pytest-cov", "twine", "check-manifest"],
 )
