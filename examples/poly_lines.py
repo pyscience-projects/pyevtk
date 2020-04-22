@@ -61,6 +61,12 @@ vel = np.zeros(6)
 vel[0:3] = 1.0
 vel[4:6] = 5.0
 
-polyLinesToVTK("./poly_lines", x, y, z, pointsPerLine = pointsPerLine, cellData = {"vel" : vel}, pointData = {"temp" : temp, "pressure" : pressure})
-
-
+polyLinesToVTK(
+    "./poly_lines",
+    x,
+    y,
+    z,
+    pointsPerLine=pointsPerLine,
+    cellData={"vel": vel},
+    pointData={"temp": temp, "pressure": pressure},
+)
