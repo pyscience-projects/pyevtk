@@ -31,10 +31,11 @@ class XmlWriter:
 
     Parameters
     ----------
-    filepath : TYPE
-        DESCRIPTION.
+    filepath : str
+        Path to the xml file.
     addDeclaration : bool, optional
-        DESCRIPTION. The default is True.
+        Whether to add the declaration.
+        The default is True.
     """
 
     def __init__(self, filepath, addDeclaration=True):
