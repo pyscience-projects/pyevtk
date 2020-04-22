@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # ***********************************************************************************
-# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -38,19 +38,21 @@ ncells = nx * ny * nz
 npoints = (nx + 1) * (ny + 1) * (nz + 1)
 
 # Variables
-pressure = np.random.rand(ncells).reshape( (nx, ny, nz), order = 'C')
-temp = np.random.rand(npoints).reshape( (nx + 1, ny + 1, nz + 1))
+pressure = np.random.rand(ncells).reshape((nx, ny, nz), order="C")
+temp = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1))
 
-imageToVTK("./image", cellData = {"pressure" : pressure}, pointData = {"temp" : temp} )
+imageToVTK(
+    "./image", cellData={"pressure": pressure}, pointData={"temp": temp}
+)
 
-fluxx = np.random.rand(ncells).reshape( (nx, ny, nz), order='F')
-fluxy = np.random.rand(ncells).reshape( (nx, ny, nz), order='F')
-fluxz = np.random.rand(ncells).reshape( (nx, ny, nz), order='F')
+fluxx = np.random.rand(ncells).reshape((nx, ny, nz), order="F")
+fluxy = np.random.rand(ncells).reshape((nx, ny, nz), order="F")
+fluxz = np.random.rand(ncells).reshape((nx, ny, nz), order="F")
 flux = (fluxx, fluxy, fluxz)
 
-Efieldx = np.random.rand(npoints).reshape( (nx + 1, ny + 1, nz + 1), order='F')
-Efieldy = np.random.rand(npoints).reshape( (nx + 1, ny + 1, nz + 1), order='F')
-Efieldz = np.random.rand(npoints).reshape( (nx + 1, ny + 1, nz + 1), order='F')
-Efield = (Efieldx,Efieldy,Efieldz)
+Efieldx = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1), order="F")
+Efieldy = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1), order="F")
+Efieldz = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1), order="F")
+Efield = (Efieldx, Efieldy, Efieldz)
 
-imageToVTK("./image", cellData={"flux" : flux}, pointData = {"Efield" : Efieldx} )
+imageToVTK("./image", cellData={"flux": flux}, pointData={"Efield": Efieldx})
