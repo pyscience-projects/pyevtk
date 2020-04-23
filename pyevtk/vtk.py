@@ -368,7 +368,7 @@ class VtkFile:
         Parameters
         ----------
         nodeType : str
-            DESCRIPTION.
+            Either "Point", "Cell" or "Field".
         scalars : str, optional
             default data array name for scalar data.
         vectors : str, optional

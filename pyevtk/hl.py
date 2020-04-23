@@ -625,8 +625,8 @@ def cylinderToVTK(
 
     Parameters
     ----------
-    path : TYPE
-        DESCRIPTION.
+    path : str
+        name of the file without extension where data should be saved.
     x0 : float
         x-center of the cylinder.
     y0 : float
