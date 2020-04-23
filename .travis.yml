@@ -1,12 +1,15 @@
 language: python
-dist: xenial
+dist: bionic
 
 python:
-  - "2.7"
-  - "3.4"
+  # EOL 2020-09-13
   - "3.5"
+  # EOL 2021-12-23
   - "3.6"
+  # EOL 2023-06-27
   - "3.7"
+  # EOL 2024-10
+  - "3.8"
 
 install:
     - pip install -r requirements.txt
