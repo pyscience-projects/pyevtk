@@ -1,5 +1,5 @@
 # ***********************************************************************************
-# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved                     * 
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved                     *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -22,38 +22,66 @@
 # * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS              *
 # * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                    *
 # ***********************************************************************************
+"""Simple class to generate a well-formed XML file."""
 
-# **************************************
-# *  Simple class to generate a        *
-# *  well-formed XML file.             *
-# **************************************
 
 class XmlWriter:
-    def __init__(self, filepath, addDeclaration = True):
+    """
+    xml writer class.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the xml file.
+    addDeclaration : bool, optional
+        Whether to add the declaration.
+        The default is True.
+    """
+
+    def __init__(self, filepath, addDeclaration=True):
         self.stream = open(filepath, "wb")
         self.openTag = False
         self.current = []
-        if (addDeclaration): self.addDeclaration()
+        if addDeclaration:
+            self.addDeclaration()
 
     def close(self):
-        assert(not self.openTag)
+        """Close the file."""
+        assert not self.openTag
         self.stream.close()
 
     def addDeclaration(self):
+        """Add xml declaration."""
         self.stream.write(b'<?xml version="1.0"?>')
-    
+
     def openElement(self, tag):
-        if self.openTag: self.stream.write(b">")
+        """Open a new xml element."""
+        if self.openTag:
+            self.stream.write(b">")
         st = "\n<%s" % tag
         self.stream.write(str.encode(st))
         self.openTag = True
         self.current.append(tag)
         return self
 
-    def closeElement(self, tag = None):
+    def closeElement(self, tag=None):
+        """
+        Close the current element.
+
+        Parameters
+        ----------
+        tag : str, optional
+            Tag of the element.
+            The default is None.
+
+        Returns
+        -------
+        XmlWriter
+            The XmlWriter itself for chained calles.
+        """
         if tag:
-            assert(self.current.pop() == tag)
-            if (self.openTag):
+            assert self.current.pop() == tag
+            if self.openTag:
                 self.stream.write(b">")
                 self.openTag = False
             st = "\n</%s>" % tag
@@ -65,16 +93,41 @@ class XmlWriter:
         return self
 
     def addText(self, text):
-        if (self.openTag):
+        """
+        Add text.
+
+        Parameters
+        ----------
+        text : str
+            Text to add.
+
+        Returns
+        -------
+        XmlWriter
+            The XmlWriter itself for chained calles.
+        """
+        if self.openTag:
             self.stream.write(b">\n")
             self.openTag = False
         self.stream.write(str.encode(text))
         return self
 
     def addAttributes(self, **kwargs):
-        assert (self.openTag)
+        """
+        Add attributes.
+
+        Parameters
+        ----------
+        **kwargs
+            keys as attribute names.
+
+        Returns
+        -------
+        XmlWriter
+            The XmlWriter itself for chained calles.
+        """
+        assert self.openTag
         for key in kwargs:
-            st = ' %s="%s"'%(key, kwargs[key])
+            st = ' %s="%s"' % (key, kwargs[key])
             self.stream.write(str.encode(st))
         return self
-

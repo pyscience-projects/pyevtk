@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # ***********************************************************************************
-# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -39,11 +39,10 @@ y = np.random.rand(npoints)
 z = np.random.rand(npoints)
 pressure = np.random.rand(npoints)
 temp = np.random.rand(npoints)
-pointsToVTK("./rnd_points", x, y, z, data = {"temp" : temp, "pressure" : pressure})
+pointsToVTK("./rnd_points", x, y, z, data={"temp": temp, "pressure": pressure})
 
 # Example 2
-x = np.arange(1.0,10.0,0.1)
-y = np.arange(1.0,10.0,0.1)
-z = np.arange(1.0,10.0,0.1)
-pointsToVTK("./line_points", x, y, z, data = {"elev" : z})
-
+x = np.arange(1.0, 10.0, 0.1)
+y = np.arange(1.0, 10.0, 0.1)
+z = np.arange(1.0, 10.0, 0.1)
+pointsToVTK("./line_points", x, y, z, data={"elev": z})

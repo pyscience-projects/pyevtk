@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # ***********************************************************************************
-# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -33,8 +33,8 @@
 from pyevtk.vtk import VtkGroup
 
 g = VtkGroup("./group")
-g.addFile(filepath = "sim0000.vtu", sim_time = 0.0)
-g.addFile(filepath = "sim0001.vtu", sim_time = 1.0)
-g.addFile(filepath = "sim0002.vtu", sim_time = 2.0)
-g.addFile(filepath = "sim0003.vtu", sim_time = 3.0)
+g.addFile(filepath="sim0000.vtu", sim_time=0.0)
+g.addFile(filepath="sim0001.vtu", sim_time=1.0)
+g.addFile(filepath="sim0002.vtu", sim_time=2.0)
+g.addFile(filepath="sim0003.vtu", sim_time=3.0)
 g.save()

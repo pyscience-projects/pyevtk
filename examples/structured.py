@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 # ***********************************************************************************
-# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    * 
+# * Copyright 2010 - 2016 Paulo A. Herrera. All rights reserved.                    *
 # *                                                                                 *
 # * Redistribution and use in source and binary forms, with or without              *
 # * modification, are permitted provided that the following conditions are met:     *
@@ -37,15 +37,15 @@ import random as rnd
 # Dimensions
 nx, ny, nz = 6, 6, 2
 lx, ly, lz = 1.0, 1.0, 1.0
-dx, dy, dz = lx/nx, ly/ny, lz/nz
+dx, dy, dz = lx / nx, ly / ny, lz / nz
 
 ncells = nx * ny * nz
 npoints = (nx + 1) * (ny + 1) * (nz + 1)
 
 # Coordinates
-X = np.arange(0, lx + 0.1*dx, dx, dtype='float64')
-Y = np.arange(0, ly + 0.1*dy, dy, dtype='float64')
-Z = np.arange(0, lz + 0.1*dz, dz, dtype='float64')
+X = np.arange(0, lx + 0.1 * dx, dx, dtype="float64")
+Y = np.arange(0, ly + 0.1 * dy, dy, dtype="float64")
+Z = np.arange(0, lz + 0.1 * dz, dz, dtype="float64")
 
 x = np.zeros((nx + 1, ny + 1, nz + 1))
 y = np.zeros((nx + 1, ny + 1, nz + 1))
@@ -56,12 +56,19 @@ z = np.zeros((nx + 1, ny + 1, nz + 1))
 for k in range(nz + 1):
     for j in range(ny + 1):
         for i in range(nx + 1):
-            x[i,j,k] = X[i] + (0.5 - rnd.random()) * 0.1 * dx 
-            y[i,j,k] = Y[j] + (0.5 - rnd.random()) * 0.1 * dy
-            z[i,j,k] = Z[k] + (0.5 - rnd.random()) * 0.1 * dz
+            x[i, j, k] = X[i] + (0.5 - rnd.random()) * 0.1 * dx
+            y[i, j, k] = Y[j] + (0.5 - rnd.random()) * 0.1 * dy
+            z[i, j, k] = Z[k] + (0.5 - rnd.random()) * 0.1 * dz
 
 # Variables
-pressure = np.random.rand(ncells).reshape( (nx, ny, nz))
-temp = np.random.rand(npoints).reshape( (nx + 1, ny + 1, nz + 1))
+pressure = np.random.rand(ncells).reshape((nx, ny, nz))
+temp = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1))
 
-gridToVTK("./structured", x, y, z, cellData = {"pressure" : pressure}, pointData = {"temp" : temp})
+gridToVTK(
+    "./structured",
+    x,
+    y,
+    z,
+    cellData={"pressure": pressure},
+    pointData={"temp": temp},
+)
