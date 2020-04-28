@@ -18,7 +18,7 @@ env:
     - SDIST_DIR=/tmp/pyevtk_sdist/
 
 before_script:
-    - pip install -U pip
+    - pip install -U pip meshio
 
 script:
     - python setup.py test
