@@ -100,3 +100,10 @@ ENV/
 
 # pycharm
 .idea
+
+# test artefacts
+*.vtu 
+*.vts 
+*.vtr 
+*.pvd 
+*.vti

@@ -45,7 +45,7 @@ setup(
     author_email="pauloa.herrera@gmail.com",
     maintainer="Adamos Kyriakou",
     maintainer_email="somada141@gmail.com",
-    url="https://github.com/paulo-herrera/PyEVTK.git",
+    url="https://github.com/pyscience-projects/pyevtk",
     packages=["pyevtk", "evtk"],
     package_dir={"pyevtk": "pyevtk"},
     package_data={"pyevtk": ["LICENSE.txt", "examples/*.py"]},
@@ -53,4 +53,8 @@ setup(
     # necessary for 'python setup.py test'
     setup_requires=["pytest-runner"],
     tests_require=["pytest>=3.1", "pytest-cov", "twine", "check-manifest"],
+    classifiers=['Programming Language :: Python :: 3.6',
+                 'Programming Language :: Python :: 3.7',
+                 'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9',],
 )
