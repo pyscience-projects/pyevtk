@@ -18,14 +18,13 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.x'
-    - name: Install dependencies
+    - name: Build dist artefacts
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
-    - name: Build and publish
-      env:
-        TWINE_USERNAME: ${{ secrets.TEST_PYPI_USERNAME }}
-        TWINE_PASSWORD: ${{ secrets.TEST_PYPI_TOKEN }}
-      run: |
-        python setup.py sdist bdist_wheel
-        twine upload --repository testpypi dist/*
+        pip install setuptools wheel
+        python -m build --sdist --wheel --outdir dist/
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.TEST_PYPI_TOKEN }}
+        repository_url: https://test.pypi.org/legacy/
