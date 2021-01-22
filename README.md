@@ -1,5 +1,5 @@
 [![Coverage Status](https://codecov.io/gh/pyscience-projects/pyevtk/branch/master/graph/badge.svg)](https://codecov.io/gh/pyscience-projects/pyevtk)
-[![Build Status](https://travis-ci.org/pyscience-projects/pyevtk.png?branch=master)](https://travis-ci.org/pyscience-projects/pyevtk)
+[![Build Status](https://github.com/pyscience-projects/pyevtk/workflows/Test%20Python/badge.svg)](https://github.com/pyscience-projects/pyevtk/actions?query=workflow%3A%22Test+Python%22)
 
 PREAMBLE:
 =========
