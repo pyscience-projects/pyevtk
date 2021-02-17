@@ -28,6 +28,7 @@ try:
 except ImportError:
     from distutils.core import setup
 
+import versioneer
 
 def readme(fname):
     """Open the readme file."""
@@ -37,7 +38,8 @@ def readme(fname):
 
 setup(
     name="pyevtk",
-    version="1.2.0",
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     description="Export data as binary VTK files",
     long_description=readme("README.md"),
     long_description_content_type="text/markdown",
