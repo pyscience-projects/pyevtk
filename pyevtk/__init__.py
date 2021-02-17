@@ -21,3 +21,7 @@ from . import evtk
 from . import hl
 from . import vtk
 from . import xml
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions

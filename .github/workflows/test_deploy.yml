@@ -3,9 +3,7 @@
 
 name: Upload Python Package
 
-on:
-  push:
-    branches: 
+on: [pull_request]
 
 jobs:
   deploy:
