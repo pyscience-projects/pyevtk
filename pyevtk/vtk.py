@@ -387,15 +387,15 @@ class VtkFile:
         """
         self.xml.openElement(nodeType + "Data")
         if scalars:
-            self.xml.addAttributes(scalars=scalars)
+            self.xml.addAttributes(Scalars=scalars)
         if vectors:
-            self.xml.addAttributes(vectors=vectors)
+            self.xml.addAttributes(Vectors=vectors)
         if normals:
-            self.xml.addAttributes(normals=normals)
+            self.xml.addAttributes(Normals=normals)
         if tensors:
-            self.xml.addAttributes(tensors=tensors)
+            self.xml.addAttributes(Tensors=tensors)
         if tcoords:
-            self.xml.addAttributes(tcoords=tcoords)
+            self.xml.addAttributes(TCoords=tcoords)
 
         return self
 
