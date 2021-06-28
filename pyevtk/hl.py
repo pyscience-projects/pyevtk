@@ -46,8 +46,8 @@ def _addDataToFile(vtkFile, cellData, pointData, fieldData=None):
     if pointData:
         keys = list(pointData.keys())
         # find first scalar and vector data key to set it as attribute
-        scalars = next((key for key in keys if type(pointData[key]).__name__ != "tuple"), None)
-        vectors = next((key for key in keys if type(pointData[key]).__name__ == "tuple"), None)
+        scalars = next((key for key in keys if isinstance(pointData[key], np.ndarray)), None)
+        vectors = next((key for key in keys if isinstance(pointData[key], tuple)), None)
         vtkFile.openData("Point", scalars=scalars, vectors=vectors)
         for key in keys:
             data = pointData[key]
@@ -58,8 +58,8 @@ def _addDataToFile(vtkFile, cellData, pointData, fieldData=None):
     if cellData:
         keys = list(cellData.keys())
         # find first scalar and vector data key to set it as attribute
-        scalars = next((key for key in keys if type(cellData[key]).__name__ != "tuple"), None)
-        vectors = next((key for key in keys if type(cellData[key]).__name__ == "tuple"), None)
+        scalars = next((key for key in keys if isinstance(cellData[key], np.ndarray)), None)
+        vectors = next((key for key in keys if isinstance(cellData[key], tuple)), None)
         vtkFile.openData("Cell", scalars=scalars, vectors=vectors)
         for key in keys:
             data = cellData[key]
