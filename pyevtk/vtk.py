@@ -26,6 +26,7 @@
 
 import sys
 import os
+import numpy as np
 
 from .evtk import writeBlockSize, writeArrayToFile, writeArraysToFile
 from .xml import XmlWriter
@@ -387,15 +388,15 @@ class VtkFile:
         """
         self.xml.openElement(nodeType + "Data")
         if scalars:
-            self.xml.addAttributes(scalars=scalars)
+            self.xml.addAttributes(Scalars=scalars)
         if vectors:
-            self.xml.addAttributes(vectors=vectors)
+            self.xml.addAttributes(Vectors=vectors)
         if normals:
-            self.xml.addAttributes(normals=normals)
+            self.xml.addAttributes(Normals=normals)
         if tensors:
-            self.xml.addAttributes(tensors=tensors)
+            self.xml.addAttributes(Tensors=tensors)
         if tcoords:
-            self.xml.addAttributes(tcoords=tcoords)
+            self.xml.addAttributes(TCoords=tcoords)
 
         return self
 
@@ -530,11 +531,11 @@ class VtkFile:
             of a vector field.
             All arrays must be one dimensional or three-dimensional.
         """
-        if type(data).__name__ == "tuple":  # vector data
+        if isinstance(data, tuple):  # vector data
             assert len(data) == 3
             x = data[0]
             self.addHeader(name, x.dtype.name, x.size, 3)
-        elif type(data).__name__ == "ndarray":
+        elif isinstance(data, np.ndarray):
             if data.ndim == 1 or data.ndim == 3:
                 self.addHeader(name, data.dtype.name, data.size, 1)
             else:
@@ -593,7 +594,7 @@ class VtkFile:
         # TODO: Extend this function to accept contiguous C order arrays.
         self.openAppendedData()
 
-        if type(data).__name__ == "tuple":  # 3 numpy arrays
+        if isinstance(data, tuple):  # 3 numpy arrays
             ncomp = len(data)
             assert ncomp == 3
             dsize = data[0].dtype.itemsize
@@ -606,7 +607,7 @@ class VtkFile:
             x, y, z = data[0], data[1], data[2]
             writeArraysToFile(self.xml.stream, x, y, z)
 
-        elif type(data).__name__ == "ndarray" and (
+        elif isinstance(data, np.ndarray) and (
             data.ndim == 1 or data.ndim == 3
         ):  # single numpy array
             ncomp = 1
