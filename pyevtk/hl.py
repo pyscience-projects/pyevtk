@@ -27,10 +27,15 @@
 import numpy as np
 from .vtk import (
     VtkFile,
+    VtkParallelFile,
     VtkUnstructuredGrid,
     VtkImageData,
     VtkRectilinearGrid,
     VtkStructuredGrid,
+    VtkPImageData,
+    VtkPRectilinearGrid,
+    VtkPStructuredGrid,
+    VtkUnstructuredGrid,
     VtkVertex,
     VtkLine,
     VtkPolyLine,
@@ -81,6 +86,33 @@ def _addDataToFile(vtkFile, cellData, pointData, fieldData=None):
         vtkFile.closeData("Field")
 
 
+def _addDataToParallelFile(vtkParallelFile, cellData, pointData):
+    assert isinstance(vtkParallelFile, VtkParallelFile)
+    # Point data
+    if pointData:
+        keys = list(pointData.keys())
+        # find first scalar and vector data key to set it as attribute
+        scalars = next((key for key in keys if pointData[key][1] == 1), None)
+        vectors = next((key for key in keys if pointData[key][1] == 3), None)
+        vtkParallelFile.openData("PPoint", scalars=scalars, vectors=vectors)
+        for key in keys:
+            dtype, ncomp = pointData[key]
+            vtkParallelFile.addHeader(key, dtype=dtype, ncomp=ncomp)
+        vtkParallelFile.closeData("PPoint")
+
+    # Cell data
+    if cellData:
+        keys = list(cellData.keys())
+        # find first scalar and vector data key to set it as attribute
+        scalars = next((key for key in keys if cellData[key][1] == 1), None)
+        vectors = next((key for key in keys if cellData[key][1] == 3), None)
+        vtkParallelFile.openData("PCell", scalars=scalars, vectors=vectors)
+        for key in keys:
+            dtype, ncomp = pointData[key]
+            vtkParallelFile.addHeader(key, dtype=dtype, ncomp=ncomp)
+        vtkParallelFile.closeData("PCell")
+
+
 def _appendDataToFile(vtkFile, cellData, pointData, fieldData=None):
     # Append data to binary section
     if pointData is not None:
@@ -107,6 +139,7 @@ def _appendDataToFile(vtkFile, cellData, pointData, fieldData=None):
 # =================================
 def imageToVTK(
     path,
+    start=(0, 0, 0),
     origin=(0.0, 0.0, 0.0),
     spacing=(1.0, 1.0, 1.0),
     cellData=None,
@@ -115,11 +148,14 @@ def imageToVTK(
 ):
     """
     Export data values as a rectangular image.
-
     Parameters
     ----------
     path : str
         name of the file without extension where data should be saved.
+    start : tuple, optional
+        start of the coordinates.
+        Used in the distributed context where each process
+        writes its own vtk file. Default is (0, 0, 0).
     origin : tuple, optional
         grid origin.
         The default is (0.0, 0.0, 0.0).
@@ -138,17 +174,15 @@ def imageToVTK(
         Arrays must have same dimension in each direction and
         they should be equal to the dimensions of the cell data plus one and
         can contain scalar data ([n+1,n+1,n+1]) or
-        +1,n+1,n+1],[n+1,n+1,n+1],[n+1,n+1,n+1]).
+        ([n+1,n+1,n+1],[n+1,n+1,n+1],[n+1,n+1,n+1]).
         The default is None.
     fieldData : dict, optional
         dictionary with variables associated with the field.
         Keys should be the names of the variable stored in each array.
-
     Returns
     -------
     str
         Full path to saved file.
-
     Notes
     -----
     At least, cellData or pointData must be present
@@ -157,7 +191,6 @@ def imageToVTK(
     assert cellData is not None or pointData is not None
 
     # Extract dimensions
-    start = (0, 0, 0)
     end = None
     if cellData is not None:
         keys = list(cellData.keys())
@@ -188,10 +221,11 @@ def imageToVTK(
 
 
 # ==============================================================================
-def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
+def gridToVTK(
+    path, x, y, z, start=(0, 0, 0), cellData=None, pointData=None, fieldData=None
+):
     """
-    Write data values as a rectilinear or rectangular grid.
-
+    Write data values as a structured grid.
     Parameters
     ----------
     path : str
@@ -202,6 +236,10 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
         y coordinate axis.
     z : array-like
         z coordinate axis.
+    start : tuple, optional
+        start of the coordinates.
+        Used in the distributed conwhere each process
+        writes its own vtk file. Default is (0, 0, 0).
     cellData : dict, optional
         dictionary containing arrays with cell centered data.
         Keys should be the names of the data arrays.
@@ -216,12 +254,10 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
     fieldData : dict, optional
         dictionary with variables associated with the field.
         Keys should be the names of the variable stored in each array.
-
     Returns
     -------
     str
         Full path to saved file.
-
     Notes
     -----
     coordinates of the nodes of the grid. They can be 1D or 3D depending if
@@ -235,8 +271,6 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
     In both cases the arrays dimensions should be
     equal to the number of nodes of the grid.
     """
-    # Extract dimensions
-    start = (0, 0, 0)
     nx = ny = nz = 0
 
     if x.ndim == 1 and y.ndim == 1 and z.ndim == 1:
@@ -249,13 +283,22 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
         isRect = False
         ftype = VtkStructuredGrid
     else:
-        assert False
-    end = (nx, ny, nz)
+        raise ValueError(
+            f"x, y and z should have ndim == 3 but they have ndim of {x.ndim}, {y.ndim}"
+            f" and {z.ndim} respectively"
+        )
 
+    # Write extent
+    end = (start[0] + nx, start[1] + ny, start[2] + nz)
+
+    # Open File
     w = VtkFile(path, ftype)
+
+    # Open Grid part
     w.openGrid(start=start, end=end)
     w.openPiece(start=start, end=end)
 
+    # Add coordinates description
     if isRect:
         w.openElement("Coordinates")
         w.addData("x_coordinates", x)
@@ -267,9 +310,13 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
         w.addData("points", (x, y, z))
         w.closeElement("Points")
 
+    # Add data description
     _addDataToFile(w, cellData, pointData, fieldData)
+
+    # Close Grid part
     w.closePiece()
     w.closeGrid()
+
     # Write coordinates
     if isRect:
         w.appendData(x).appendData(y).appendData(z)
@@ -277,6 +324,87 @@ def gridToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
         w.appendData((x, y, z))
     # Write data
     _appendDataToFile(w, cellData, pointData, fieldData)
+
+    # Close file
+    w.save()
+
+    return w.getFileName()
+
+
+def writeParallelVTKGrid(
+    path, coordsData, starts, ends, sources, ghostlevel=0, cellData=None, pointData=None
+):
+    """
+    Writes a parallel vtk file from grid-like data:
+    VTKStructuredGrid or VTKRectilinearGrid
+
+    Parameters
+    ----------
+    path : str
+        name of the file without extension.
+    coordsData : tuple
+        2-tuple (shape, dtype) where shape is the
+        shape of the coordinates of the full mesh
+        and dtype is the dtype of the coordinates.
+    starts : list
+        list of 3-tuple representing where each source file starts
+        in each dimension
+    source : list
+        list of the relative paths of the source files where the actual data is found
+    ghostlevel : int, optional
+        Number of ghost-levels by which
+        the extents in the individual source files overlap.
+    pointData : dict
+        dictionnary containing the information about the arrays
+        containing node centered data.
+        Keys shoud be the names of the arrays.
+        Values are (dtype, number of components)
+    cellData :
+        dictionnary containing the information about the arrays
+        containing cell centered data.
+        Keys shoud be the names of the arrays.
+        Values are (dtype, number of components)
+    """
+    # Check that every source as a start and an end
+    assert len(starts) == len(ends) == len(sources)
+
+    # Get the extension + check that it's consistent accros all source files
+    common_ext = sources[0].split(".")[-1]
+    assert all(s.split(".")[-1] == common_ext for s in sources)
+
+    if common_ext == "vts":
+        ftype = VtkPStructuredGrid
+        is_Rect = False
+    elif common_ext == "vtr":
+        ftype = VtkPRectilinearGrid
+        is_Rect = True
+    else:
+        raise ValueError("This functions is meant to work only with ")
+
+    w = VtkParallelFile(path, ftype)
+    start = (0, 0, 0)
+    (s_x, s_y, s_z), dtype = coordsData
+    end = s_x - 1, s_y - 1, s_z - 1
+
+    w.openGrid(start=start, end=end, ghostlevel=ghostlevel)
+
+    _addDataToParallelFile(w, cellData=cellData, pointData=pointData)
+
+    if is_Rect:
+        w.openElement("PCoordinates")
+        w.addHeader("x_coordinates", dtype=dtype, ncomp=1)
+        w.addHeader("y_coordinates", dtype=dtype, ncomp=1)
+        w.addHeader("z_coordinates", dtype=dtype, ncomp=1)
+        w.closeElement("PCoordinates")
+    else:
+        w.openElement("PPoints")
+        w.addHeader("points", dtype=dtype, ncomp=3)
+        w.closeElement("PPoints")
+
+    for start_source, end_source, source in zip(starts, ends, sources):
+        w.addPiece(start_source, end_source, source)
+
+    w.closeGrid()
     w.save()
     return w.getFileName()
 

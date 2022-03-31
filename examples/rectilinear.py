@@ -30,8 +30,12 @@
 # * This example shows how to export a rectilinear grid.       *
 # **************************************************************
 
-from pyevtk.hl import gridToVTK
+from pyevtk.hl import gridToVTK, writeParallelVTKGrid
 import numpy as np
+
+# ==================
+# Serial example
+# ==================
 
 # Dimensions
 nx, ny, nz = 6, 6, 2
@@ -57,4 +61,27 @@ gridToVTK(
     z,
     cellData={"pressure": pressure},
     pointData={"temp": temp},
+)
+
+
+# ==================
+# Parallel example
+# ==================
+
+# Dimensions
+x1 = np.linspace(0, 1, 10)
+x2 = np.linspace(1, 2, 20)
+
+y = np.linspace(0, 1, 10)
+z = np.linspace(0, 1, 10)
+
+gridToVTK("test.0", x1, y, z, start=(0, 0, 0))
+gridToVTK("test.1", x2, y, z, start=(9, 0, 0))
+
+writeParallelVTKGrid(
+    "test_full",
+    coordsData=((29, 10, 10), x.dtype),
+    starts=[(0, 0, 0), (9, 0, 0)],
+    ends=[(9, 9, 9), (28, 9, 9)],
+    sources=["test.0.vtr", "test.1.vtr"],
 )
