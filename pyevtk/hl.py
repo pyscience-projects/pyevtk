@@ -148,6 +148,7 @@ def imageToVTK(
 ):
     """
     Export data values as a rectangular image.
+
     Parameters
     ----------
     path : str
@@ -179,10 +180,12 @@ def imageToVTK(
     fieldData : dict, optional
         dictionary with variables associated with the field.
         Keys should be the names of the variable stored in each array.
+
     Returns
     -------
     str
         Full path to saved file.
+
     Notes
     -----
     At least, cellData or pointData must be present
@@ -225,7 +228,8 @@ def gridToVTK(
     path, x, y, z, start=(0, 0, 0), cellData=None, pointData=None, fieldData=None
 ):
     """
-    Write data values as a structured grid.
+    Write data values as a rectilinear or structured grid.
+
     Parameters
     ----------
     path : str
