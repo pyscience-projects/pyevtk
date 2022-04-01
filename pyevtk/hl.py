@@ -242,7 +242,7 @@ def gridToVTK(
         z coordinate axis.
     start : tuple, optional
         start of the coordinates.
-        Used in the distributed conwhere each process
+        Used in the distributed context where each process
         writes its own vtk file. Default is (0, 0, 0).
     cellData : dict, optional
         dictionary containing arrays with cell centered data.
