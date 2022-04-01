@@ -5,3 +5,5 @@ recursive-include examples *.py
 recursive-include tests *.py
 include versioneer.py
 include pyevtk/_version.py
+exclude .pre-commit-config.yaml
+prune .github

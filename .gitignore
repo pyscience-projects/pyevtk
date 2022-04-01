@@ -102,8 +102,8 @@ ENV/
 .idea
 
 # test artefacts
-*.vtu 
-*.vts 
-*.vtr 
-*.pvd 
+*.vtu
+*.vts
+*.vtr
+*.pvd
 *.vti

@@ -46,7 +46,9 @@ def _addDataToFile(vtkFile, cellData, pointData, fieldData=None):
     if pointData:
         keys = list(pointData.keys())
         # find first scalar and vector data key to set it as attribute
-        scalars = next((key for key in keys if isinstance(pointData[key], np.ndarray)), None)
+        scalars = next(
+            (key for key in keys if isinstance(pointData[key], np.ndarray)), None
+        )
         vectors = next((key for key in keys if isinstance(pointData[key], tuple)), None)
         vtkFile.openData("Point", scalars=scalars, vectors=vectors)
         for key in keys:
@@ -58,7 +60,9 @@ def _addDataToFile(vtkFile, cellData, pointData, fieldData=None):
     if cellData:
         keys = list(cellData.keys())
         # find first scalar and vector data key to set it as attribute
-        scalars = next((key for key in keys if isinstance(cellData[key], np.ndarray)), None)
+        scalars = next(
+            (key for key in keys if isinstance(cellData[key], np.ndarray)), None
+        )
         vectors = next((key for key in keys if isinstance(cellData[key], tuple)), None)
         vtkFile.openData("Cell", scalars=scalars, vectors=vectors)
         for key in keys:
@@ -415,18 +419,14 @@ def linesToVTK(path, x, y, z, cellData=None, pointData=None, fieldData=None):
     w.addData("types", cell_types)
     w.closeElement("Cells")
 
-    _addDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _addDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.closePiece()
     w.closeGrid()
     w.appendData((x, y, z))
     w.appendData(connectivity).appendData(offsets).appendData(cell_types)
 
-    _appendDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _appendDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.save()
     return w.getFileName()
@@ -473,9 +473,7 @@ def polyLinesToVTK(
     ncells = pointsPerLine.size
 
     # create some temporary arrays to write grid topology
-    offsets = np.zeros(
-        ncells, dtype="int32"
-    )  # index of last node in each cell
+    offsets = np.zeros(ncells, dtype="int32")  # index of last node in each cell
     ii = 0
     for i in range(ncells):
         ii += pointsPerLine[i]
@@ -501,18 +499,14 @@ def polyLinesToVTK(
     w.addData("types", cell_types)
     w.closeElement("Cells")
 
-    _addDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _addDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.closePiece()
     w.closeGrid()
     w.appendData((x, y, z))
     w.appendData(connectivity).appendData(offsets).appendData(cell_types)
 
-    _appendDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _appendDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.save()
     return w.getFileName()
@@ -595,18 +589,14 @@ def unstructuredGridToVTK(
     w.addData("types", cell_types)
     w.closeElement("Cells")
 
-    _addDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _addDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.closePiece()
     w.closeGrid()
     w.appendData((x, y, z))
     w.appendData(connectivity).appendData(offsets).appendData(cell_types)
 
-    _appendDataToFile(
-        w, cellData=cellData, pointData=pointData, fieldData=fieldData
-    )
+    _appendDataToFile(w, cellData=cellData, pointData=pointData, fieldData=fieldData)
 
     w.save()
     return w.getFileName()

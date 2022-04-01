@@ -26,6 +26,7 @@
 
 import sys
 import struct
+
 # import base64
 import numpy as np
 
