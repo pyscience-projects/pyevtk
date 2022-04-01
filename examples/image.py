@@ -41,9 +41,7 @@ npoints = (nx + 1) * (ny + 1) * (nz + 1)
 pressure = np.random.rand(ncells).reshape((nx, ny, nz), order="C")
 temp = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1))
 
-imageToVTK(
-    "./image", cellData={"pressure": pressure}, pointData={"temp": temp}
-)
+imageToVTK("./image", cellData={"pressure": pressure}, pointData={"temp": temp})
 
 fluxx = np.random.rand(ncells).reshape((nx, ny, nz), order="F")
 fluxy = np.random.rand(ncells).reshape((nx, ny, nz), order="F")

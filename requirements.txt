@@ -6,3 +6,4 @@ codecov
 twine
 check-manifest
 readme_renderer[md]
+black~=22.1.0

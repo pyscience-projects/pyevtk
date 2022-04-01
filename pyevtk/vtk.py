@@ -323,9 +323,7 @@ class VtkFile:
             self.xml.addAttributes(Extent=ext)
 
         elif ncells and npoints:
-            self.xml.addAttributes(
-                NumberOfPoints=npoints, NumberOfCells=ncells
-            )
+            self.xml.addAttributes(NumberOfPoints=npoints, NumberOfCells=ncells)
 
         elif npoints or nverts or nlines or nstrips or npolys:
             if npoints is None:
@@ -512,9 +510,7 @@ class VtkFile:
         )
         self.xml.closeElement()
 
-        self.offset += (
-            nelem * ncomp * dtype.size + 8
-        )  # add 8 to indicate array size
+        self.offset += nelem * ncomp * dtype.size + 8  # add 8 to indicate array size
         return self
 
     def addData(self, name, data):
@@ -633,9 +629,9 @@ class VtkFile:
         from an external library.
         """
         if not self.appendedDataIsOpen:
-            self.xml.openElement("AppendedData").addAttributes(
-                encoding="raw"
-            ).addText("_")
+            self.xml.openElement("AppendedData").addAttributes(encoding="raw").addText(
+                "_"
+            )
             self.appendedDataIsOpen = True
 
     def closeAppendedData(self):
