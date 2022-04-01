@@ -2,6 +2,7 @@ import pytest
 import os
 import runpy
 
+import numpy as np
 
 def test_imports():
     import pyevtk
@@ -26,3 +27,42 @@ def test_compat_lib():
     assert pyevtk.vtk is evtk.vtk
     assert pyevtk.xml is evtk.xml
 
+
+def test_positional_args_only_image():
+    from pyevtk.hl import imageToVTK
+    nx, ny, nz = 6, 6, 2
+    ncells = nx * ny * nz
+    npoints = (nx + 1) * (ny + 1) * (nz + 1)
+
+    # Variables
+    pressure = np.random.rand(ncells).reshape((nx, ny, nz), order="C")
+    temp = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1))
+
+    imageToVTK(
+        "./image", (0.0, 0.0, 0.0), (1.0, 1.0, 1.0), {"pressure": pressure}, {"temp": temp}
+    )
+
+
+def test_positional_args_only_grid():
+    from pyevtk.hl import gridToVTK
+    nx, ny, nz = 6, 6, 2
+
+    ncells = nx * ny * nz
+    npoints = (nx + 1) * (ny + 1) * (nz + 1)
+
+    x = np.zeros((nx + 1, ny + 1, nz + 1))
+    y = np.zeros((nx + 1, ny + 1, nz + 1))
+    z = np.zeros((nx + 1, ny + 1, nz + 1))
+
+    # Variables
+    pressure = np.random.rand(ncells).reshape((nx, ny, nz))
+    temp = np.random.rand(npoints).reshape((nx + 1, ny + 1, nz + 1))
+
+    gridToVTK(
+        "./structured",
+        x,
+        y,
+        z,
+        {"pressure": pressure},
+        {"temp": temp},
+    )
