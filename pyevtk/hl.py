@@ -108,7 +108,7 @@ def _addDataToParallelFile(vtkParallelFile, cellData, pointData):
         vectors = next((key for key in keys if cellData[key][1] == 3), None)
         vtkParallelFile.openData("PCell", scalars=scalars, vectors=vectors)
         for key in keys:
-            dtype, ncomp = pointData[key]
+            dtype, ncomp = cellData[key]
             vtkParallelFile.addHeader(key, dtype=dtype, ncomp=ncomp)
         vtkParallelFile.closeData("PCell")
 
