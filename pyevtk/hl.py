@@ -139,12 +139,12 @@ def _appendDataToFile(vtkFile, cellData, pointData, fieldData=None):
 # =================================
 def imageToVTK(
     path,
-    start=(0, 0, 0),
     origin=(0.0, 0.0, 0.0),
     spacing=(1.0, 1.0, 1.0),
     cellData=None,
     pointData=None,
     fieldData=None,
+    start=(0, 0, 0),
 ):
     """
     Export data values as a rectangular image.
@@ -225,7 +225,7 @@ def imageToVTK(
 
 # ==============================================================================
 def gridToVTK(
-    path, x, y, z, start=(0, 0, 0), cellData=None, pointData=None, fieldData=None
+    path, x, y, z, cellData=None, pointData=None, fieldData=None, start=(0, 0, 0)
 ):
     """
     Write data values as a rectilinear or structured grid.
