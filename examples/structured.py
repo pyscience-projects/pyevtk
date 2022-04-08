@@ -30,9 +30,13 @@
 # * This example shows how to export a structured grid.        *
 # **************************************************************
 
-from pyevtk.hl import gridToVTK
+from pyevtk.hl import gridToVTK, writeParallelVTKGrid
 import numpy as np
 import random as rnd
+
+# ===================
+# Serial Example
+# ===================
 
 # Dimensions
 nx, ny, nz = 6, 6, 2
@@ -71,4 +75,56 @@ gridToVTK(
     z,
     cellData={"pressure": pressure},
     pointData={"temp": temp},
+)
+
+
+# ===================
+# Parallel example
+# ===================
+
+# Dimensions
+x1 = np.linspace(0, 1, 20)
+
+x2_1 = np.linspace(0, 0.5, 10)
+x2_2 = np.linspace(0.5, 1, 10)
+
+x3 = np.linspace(0, 2, 30)
+
+XX1_1, XX2_1, XX3_1 = np.meshgrid(x1, x2_1, x3, indexing="ij")
+XX1_2, XX2_2, XX3_2 = np.meshgrid(x1, x2_2, x3, indexing="ij")
+
+pi = np.pi
+sphere = lambda R, Th, Ph: (
+    R * np.cos(pi * Ph) * np.sin(pi * Th),
+    R * np.sin(pi * Ph) * np.sin(pi * Th),
+    R * np.cos(pi * Th),
+)
+
+# First Half sphere
+gridToVTK(
+    "sphere.0",
+    *sphere(XX1_1, XX2_1, XX3_1),
+    start=(0, 0, 0),
+    pointData={"R": XX1_1, "Theta": XX2_1, "Phi": XX3_1}
+)
+# Second Half sphere
+gridToVTK(
+    "sphere.1",
+    *sphere(XX1_2, XX2_2, XX3_2),
+    start=(0, 9, 0),
+    pointData={"R": XX1_2, "Theta": XX2_2, "Phi": XX3_2}
+)
+
+# Write parallel file
+writeParallelVTKGrid(
+    "sphere_full",
+    coordsData=((20, 19, 30), XX1_1.dtype),
+    starts=[(0, 0, 0), (0, 9, 0)],
+    ends=[(19, 9, 29), (19, 18, 29)],
+    sources=["sphere.0.vts", "sphere.1.vts"],
+    pointData={
+        "R": (XX1_1.dtype, 1),
+        "Theta": (XX2_1.dtype, 1),
+        "Phi": (XX3_1.dtype, 1),
+    },
 )
