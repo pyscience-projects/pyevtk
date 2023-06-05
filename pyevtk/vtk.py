@@ -36,6 +36,7 @@ from .xml import XmlWriter
 #            VTK Types
 # ================================
 
+
 #     FILE TYPES
 class VtkFileType:
     """
