@@ -205,7 +205,7 @@ def imageToVTK(
         for i, s in enumerate(spacing):
             if np.isclose(s, 0.0):
                 if end[i] == 1:
-                    end = end[:i] + (0,) + end[i+1:]
+                    end = end[:i] + (0,) + end[i + 1 :]
                 else:
                     raise ValueError("imageToVTK: grid has lower dimension than data")
     elif pointData is not None:
