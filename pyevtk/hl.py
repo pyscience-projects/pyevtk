@@ -202,6 +202,12 @@ def imageToVTK(
             end = data.shape
         elif data[0].ndim == 3 and data[1].ndim == 3 and data[2].ndim == 3:
             end = data[0].shape
+        for i, s in enumerate(spacing):
+            if np.isclose(s, 0.0):
+                if end[i] == 1:
+                    end = end[:i] + (0,) + end[i+1:]
+                else:
+                    raise ValueError("imageToVTK: grid has lower dimension than data")
     elif pointData is not None:
         keys = list(pointData.keys())
         data = pointData[keys[0]]
@@ -210,6 +216,9 @@ def imageToVTK(
         elif data[0].ndim == 3 and data[1].ndim == 3 and data[2].ndim == 3:
             end = data[0].shape
         end = (end[0] - 1, end[1] - 1, end[2] - 1)
+        for i, s in enumerate(spacing):
+            if np.isclose(s, 0.0) and end[i] > 0:
+                raise ValueError("imageToVTK: grid has lower dimension than data")
 
     # Write data to file
     w = VtkFile(path, VtkImageData)
