@@ -31,7 +31,6 @@ import numpy as np
 from .evtk import writeBlockSize, writeArrayToFile, writeArraysToFile
 from .xml import XmlWriter
 
-
 # ================================
 #            VTK Types
 # ================================
