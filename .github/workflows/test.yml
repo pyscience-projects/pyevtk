@@ -29,7 +29,7 @@ jobs:
         pip install -r requirements.txt
     - name: Test with pytest
       run: |
-        python setup.py test
+        pytest
         codecov
     - name: Test with pytest
       run: |

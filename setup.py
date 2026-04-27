@@ -54,9 +54,6 @@ setup(
     package_dir={"pyevtk": "pyevtk"},
     package_data={"pyevtk": ["LICENSE.txt", "examples/*.py"]},
     install_requires=["numpy >= 1.8.0"],
-    # necessary for 'python setup.py test'
-    setup_requires=["pytest-runner"],
-    tests_require=["pytest>=3.1", "pytest-cov", "twine", "check-manifest"],
     classifiers=[
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
