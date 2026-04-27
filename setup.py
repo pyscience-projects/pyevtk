@@ -48,6 +48,7 @@ setup(
     author_email="pauloa.herrera@gmail.com",
     maintainer="Adamos Kyriakou",
     maintainer_email="somada141@gmail.com",
+    license="BSD-2-Clause",
     url="https://github.com/pyscience-projects/pyevtk",
     packages=["pyevtk", "evtk"],
     package_dir={"pyevtk": "pyevtk"},
