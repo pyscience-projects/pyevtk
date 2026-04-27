@@ -1,10 +1,7 @@
 
-# GitHub Action that uses Black to reformat the Python code in an incoming pull request.
-# If all Python code in the pull request is compliant with Black then this Action does nothing.
-# Othewrwise, Black is run and its changes are committed back to the incoming pull request.
-# https://github.com/cclauss/autoblack
+# GitHub Action that checks Python formatting with a pinned Black release.
 
-name: autoblack
+name: black
 on: [pull_request]
 jobs:
   black:
@@ -12,3 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
+        with:
+          options: "--check --diff --verbose"
+          version: "26.3.1"
+          src: "."
