@@ -26,16 +26,15 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        python -m pip install -r requirements.txt
-        python -m pip install -e .
+        python -m pip install -e ".[dev]"
     - name: Test with pytest
       run: |
         python -m pytest
         codecov
-    - name: Test with pytest
+    - name: Build and validate
       run: |
-        python setup.py bdist_wheel
-        python setup.py sdist -d ${SDIST_DIR}/ --format=gztar
+        python -m build --wheel
+        python -m build --sdist --outdir ${SDIST_DIR}/
         twine check ${SDIST_DIR}/*
         check-manifest -p python ${PWD}
         cd ${SDIST_DIR}
