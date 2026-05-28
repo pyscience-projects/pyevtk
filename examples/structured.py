@@ -105,14 +105,14 @@ gridToVTK(
     "sphere.0",
     *sphere(XX1_1, XX2_1, XX3_1),
     start=(0, 0, 0),
-    pointData={"R": XX1_1, "Theta": XX2_1, "Phi": XX3_1}
+    pointData={"R": XX1_1, "Theta": XX2_1, "Phi": XX3_1},
 )
 # Second Half sphere
 gridToVTK(
     "sphere.1",
     *sphere(XX1_2, XX2_2, XX3_2),
     start=(0, 9, 0),
-    pointData={"R": XX1_2, "Theta": XX2_2, "Phi": XX3_2}
+    pointData={"R": XX1_2, "Theta": XX2_2, "Phi": XX3_2},
 )
 
 # Write parallel file
